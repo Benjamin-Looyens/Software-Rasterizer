@@ -43,16 +43,56 @@ void Renderer::Render()
 	//Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
 
-	//RENDER LOGIC
-	for (int px{}; px < m_Width; ++px)
-	{
-		for (int py{}; py < m_Height; ++py)
-		{
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
+	// Temporary vertices 
+	std::vector<Vector3> vertices_ndc {
+		{  0.0f,  0.5f, 1.0f },
+		{  0.5f, -0.5f, 1.0f },
+		{ -0.5f, -0.5f, 1.0f }
+	};
+	
+	std::vector<Vector3> vertices_screen;
+	vertices_screen.resize(vertices_ndc.size());
 
-			ColorRGB finalColor{ gradient, gradient, gradient };
+	// Convert to Screen Space
+	std::transform(begin(vertices_ndc), end(vertices_ndc), begin(vertices_screen), 
+		[&](const Vector3& vert) { 
+			return Vector3( ((vert.x + 1.0f) / 2.0f) * m_Width,
+							((1.0f - vert.y) / 2.0f) * m_Height,
+							vert.z); 
+		}
+	);
+
+	// General logic outline:
+	//		For each triangle:
+	//			For each pixel:
+	//				is the pixel within this triangle
+
+	//RENDER LOGIC
+	for (int px{}; px < m_Width; ++px) {
+		for (int py{}; py < m_Height; ++py) {
+			const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
+			ColorRGB finalColor{ };
+
+			// Loop over all triangles with vertices defined in NDC space
+			//	Loop over all pixels & check if pixel is in triangle, "using same technique as raytracer (Triangle Intersection Test)"
+			//		If in triangle, color white
+			
+			const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
+
+			const Vector3 eV0 = vertices_screen[1] - vertices_screen[0];
+			const Vector3 cV0 = pixel3 - vertices_screen[0];
+			const bool in0 = Vector3::Cross(eV0, cV0).z > 0;
+
+			const Vector3 eV1 = vertices_screen[2] - vertices_screen[1];
+			const Vector3 cV1 = pixel3 - vertices_screen[1];
+			const bool in1 = Vector3::Cross(eV1, cV1).z > 0;
+
+			const Vector3 eV2 = vertices_screen[0] - vertices_screen[2];
+			const Vector3 cV2 = pixel3 - vertices_screen[2];
+			const bool in2 = Vector3::Cross(eV2, cV2).z > 0;
+
+			if (in0 && in1 && in2) finalColor = colors::White;
+			//finalColor = { static_cast<float>(in0), static_cast<float>(in1), static_cast<float>(in2)};
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
