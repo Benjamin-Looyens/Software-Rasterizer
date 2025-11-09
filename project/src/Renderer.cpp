@@ -44,15 +44,15 @@ void Renderer::Render()
 	SDL_LockSurface(m_pBackBuffer);
 
 	// Temporary vertices 
-	std::vector<Vertex> vertices_ndc {
-		{ {  0.0f,  0.5f, 1.0f } },
-		{ {  0.5f, -0.5f, 1.0f } },
-		{ { -0.5f, -0.5f, 1.0f } }
+	std::vector<Vertex> vertices_world {
+		{ {  0.0f, 2.0f, 0.0f } },
+		{ {  1.0f, 0.0f, 0.0f } },
+		{ { -1.0f, 0.0f, 0.0f } }
 	};
 	
 	// Convert to Screen Space
 	std::vector<Vertex> vertices_screen;
-	VertexTransformationFunction(vertices_ndc, vertices_screen);
+	VertexTransformationFunction(vertices_world, vertices_screen);
 
 	// General logic outline:
 	//		For each triangle:
@@ -105,16 +105,36 @@ void Renderer::Render()
 
 void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
 {
-	//Todo > W1 Projection Stage
 	vertices_out.resize(vertices_in.size());
+
+	// Steps:
+	// Transform with Camera VIEW matrix
+	// Apply perspective divide
+	// Convert NDC > Screen space
+	
+	const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
+			const Vector3 vertToCam = m_Camera.viewMatrix.TransformPoint(vert.position);
+			
+			const Vector3 project {
+				vertToCam.x / vertToCam.z,
+				vertToCam.y / vertToCam.z,
+				vertToCam.z
+			};
+			
+			const Vector3 ndc = {	project.x / (aspectRatio * m_Camera.fov),
+									project.y / (m_Camera.fov),
+									project.z };
+
 			return Vertex{ Vector3{
-				((vert.position.x + 1.0f) / 2.0f) * m_Width,
-				((1.0f - vert.position.y) / 2.0f) * m_Height,
-				vert.position.z 
-			} };
+				((ndc.x + 1.0f) / 2.0f)* m_Width,
+				((1.0f - ndc.y) / 2.0f)* m_Height,
+				ndc.z
+			}, 
+				vert.color
+			};
 		}
 	);
 }

@@ -51,6 +51,12 @@ namespace dae
 			//ONB => invViewMatrix
 			//Inverse(ONB) => ViewMatrix
 
+			if (viewDirty) {
+				invViewMatrix = CalculateCameraToWorld();	// CameraToWorld
+				viewMatrix = invViewMatrix.Inverse();		// WorldToCamera (ViewMatrix)
+				//viewMatrix = Matrix::CreateLookAtLH(origin, forward, up);
+			}
+
 			//ViewMatrix => Matrix::CreateLookAtLH(...) [not implemented yet]
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
 		}
@@ -61,6 +67,16 @@ namespace dae
 
 			//ProjectionMatrix => Matrix::CreatePerspectiveFovLH(...) [not implemented yet]
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
+		}
+
+		Matrix CalculateCameraToWorld()
+		{
+			// Leftover from Raytracer
+			// If I genuinely need to use this, apply the dirty pattern again
+			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
+			up = Vector3::Cross(forward, right).Normalized();
+
+			return { right, up, forward, origin };
 		}
 
 		void Update(Timer* pTimer)
@@ -129,7 +145,7 @@ namespace dae
 			}
 
 			//Update Matrices
-			if (viewDirty) CalculateViewMatrix(); // TODO : Figure out when to mark viewDirty
+			if (viewDirty) CalculateViewMatrix(); // TODO : Figure out when to mark viewDirty (I think its when toWorldDirty used to be)
 			if (projectDirty) CalculateProjectionMatrix();	// TODO : Figure out when to mark projectDirty
 															//		comment from starter files: Try to optimize this (CalculateProjectionMatrix),
 															//									should only be called once or when fov/aspectRatio changes
