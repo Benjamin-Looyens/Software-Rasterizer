@@ -60,48 +60,52 @@ void Renderer::Render()
 	//				is the pixel within this triangle
 
 	//RENDER LOGIC
-	for (int px{}; px < m_Width; ++px) {
-		for (int py{}; py < m_Height; ++py) {
-			const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
-			ColorRGB finalColor{ };
 
-			// Loop over all triangles with vertices defined in NDC space
-			//	Loop over all pixels & check if pixel is in triangle, "using same technique as raytracer (Triangle Intersection Test)"
-			//		If in triangle, color white
+	const size_t maxTri{ vertices_screen.size() / 3 };
+	for (size_t triNum{ }; triNum < maxTri; triNum++) {
+		const Vertex& v0 = vertices_screen[(triNum * 3) + 0];
+		const Vertex& v1 = vertices_screen[(triNum * 3) + 1];
+		const Vertex& v2 = vertices_screen[(triNum * 3) + 2];
 
-			const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
+		const Vector3 eV0 = v1.position - v0.position;
+		const Vector3 eV1 = v2.position - v1.position;
+		const Vector3 eV2 = v0.position - v2.position;
 
-			const Vector3 eV0 = vertices_screen[1].position - vertices_screen[0].position;
-			const Vector3 cV0 = pixel3 - vertices_screen[0].position;
-			const float in0 = Vector3::Cross(eV0, cV0).z;
+		for (int px{}; px < m_Width; ++px) {
+			for (int py{}; py < m_Height; ++py) {
+				ColorRGB finalColor{ };
+				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
+				const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
 
-			const Vector3 eV1 = vertices_screen[2].position - vertices_screen[1].position;
-			const Vector3 cV1 = pixel3 - vertices_screen[1].position;
-			const float in1 = Vector3::Cross(eV1, cV1).z;
+				const Vector3 cV0 = pixel3 - v0.position;
+				const float in0 = Vector3::Cross(eV0, cV0).z;
 
-			const Vector3 eV2 = vertices_screen[0].position - vertices_screen[2].position;
-			const Vector3 cV2 = pixel3 - vertices_screen[2].position;
-			const float in2 = Vector3::Cross(eV2, cV2).z;
+				const Vector3 cV1 = pixel3 - v1.position;
+				const float in1 = Vector3::Cross(eV1, cV1).z;
 
-			if (in0 > 0 && in1 > 0 && in2 > 0) {
-				const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
+				const Vector3 cV2 = pixel3 - v2.position;
+				const float in2 = Vector3::Cross(eV2, cV2).z;
 
-				const float mag0 = in0 / magnitude;
-				const float mag1 = in1 / magnitude;
-				const float mag2 = in2 / magnitude;
+				if (in0 > 0 && in1 > 0 && in2 > 0) {
+					const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
 
-				finalColor =	(mag0 * vertices_screen[0].color) + 
-								(mag1 * vertices_screen[1].color) + 
-								(mag2 * vertices_screen[2].color);
+					const float mag0 = in0 / magnitude;
+					const float mag1 = in1 / magnitude;
+					const float mag2 = in2 / magnitude;
+
+					finalColor =	(mag0 * v0.color) +
+									(mag1 * v1.color) +
+									(mag2 * v2.color);
+				}
+
+				//Update Color in Buffer
+				finalColor.MaxToOne();
+
+				m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
+					static_cast<uint8_t>(finalColor.r * 255),
+					static_cast<uint8_t>(finalColor.g * 255),
+					static_cast<uint8_t>(finalColor.b * 255));
 			}
-
-			//Update Color in Buffer
-			finalColor.MaxToOne();
-
-			m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
-				static_cast<uint8_t>(finalColor.r * 255),
-				static_cast<uint8_t>(finalColor.g * 255),
-				static_cast<uint8_t>(finalColor.b * 255));
 		}
 	}
 
