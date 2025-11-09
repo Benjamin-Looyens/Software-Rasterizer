@@ -127,7 +127,7 @@ namespace dae
 
 			if (movDirty && movement.Normalize() > 0.0f) { // NOTE : Ideally, the mouse movement shouldn't be normalized but making a bool just for that seems messy
 				origin += movement * movSpeed * deltaTime;
-				//toWorldDirty = true;
+				viewDirty = true;
 			}
 			if (rotDirty && rotation.Magnitude() > 0.0f) { // NOTE : In theory I could do SqrMagnitude?
 				const Vector3 scaledRotation = rotation * rotSpeed * deltaTime;
@@ -141,11 +141,11 @@ namespace dae
 
 				const Matrix fullRotMatrix = Matrix::CreateRotationX(totalYaw) * Matrix::CreateRotationY(totalPitch);
 				forward = fullRotMatrix.TransformVector(Vector3::UnitZ);
-				//toWorldDirty = true;
+				viewDirty = true;
 			}
 
 			//Update Matrices
-			if (viewDirty) CalculateViewMatrix(); // TODO : Figure out when to mark viewDirty (I think its when toWorldDirty used to be)
+			if (viewDirty) CalculateViewMatrix();
 			if (projectDirty) CalculateProjectionMatrix();	// TODO : Figure out when to mark projectDirty
 															//		comment from starter files: Try to optimize this (CalculateProjectionMatrix),
 															//									should only be called once or when fov/aspectRatio changes

@@ -45,9 +45,9 @@ void Renderer::Render()
 
 	// Temporary vertices 
 	std::vector<Vertex> vertices_world {
-		{ {  0.0f, 2.0f, 0.0f } },
-		{ {  1.0f, 0.0f, 0.0f } },
-		{ { -1.0f, 0.0f, 0.0f } }
+		{ {  0.0f,  4.0f, 2.0f }, colors::Red },
+		{ {  3.0f, -2.0f, 2.0f }, colors::Green },
+		{ { -3.0f, -2.0f, 2.0f }, colors::Blue }
 	};
 	
 	// Convert to Screen Space
@@ -68,23 +68,32 @@ void Renderer::Render()
 			// Loop over all triangles with vertices defined in NDC space
 			//	Loop over all pixels & check if pixel is in triangle, "using same technique as raytracer (Triangle Intersection Test)"
 			//		If in triangle, color white
-			
+
 			const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
 
 			const Vector3 eV0 = vertices_screen[1].position - vertices_screen[0].position;
 			const Vector3 cV0 = pixel3 - vertices_screen[0].position;
-			const bool in0 = Vector3::Cross(eV0, cV0).z > 0;
+			const float in0 = Vector3::Cross(eV0, cV0).z;
 
 			const Vector3 eV1 = vertices_screen[2].position - vertices_screen[1].position;
 			const Vector3 cV1 = pixel3 - vertices_screen[1].position;
-			const bool in1 = Vector3::Cross(eV1, cV1).z > 0;
+			const float in1 = Vector3::Cross(eV1, cV1).z;
 
 			const Vector3 eV2 = vertices_screen[0].position - vertices_screen[2].position;
 			const Vector3 cV2 = pixel3 - vertices_screen[2].position;
-			const bool in2 = Vector3::Cross(eV2, cV2).z > 0;
+			const float in2 = Vector3::Cross(eV2, cV2).z;
 
-			if (in0 && in1 && in2) finalColor = colors::White;
-			//finalColor = { static_cast<float>(in0), static_cast<float>(in1), static_cast<float>(in2)};
+			if (in0 > 0 && in1 > 0 && in2 > 0) {
+				const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
+
+				const float mag0 = in0 / magnitude;
+				const float mag1 = in1 / magnitude;
+				const float mag2 = in2 / magnitude;
+
+				finalColor =	(mag0 * vertices_screen[0].color) + 
+								(mag1 * vertices_screen[1].color) + 
+								(mag2 * vertices_screen[2].color);
+			}
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
