@@ -40,28 +40,37 @@ void Renderer::Update(Timer* pTimer)
 void Renderer::Render()
 {
 	//@START
+	// Clear buffer
+	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 0, 0, 0));
+
 	//Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
 
 	// Temporary vertices 
 	std::vector<Vertex> vertices_world {
+		// Tri 0
 		{ {  0.0f,  4.0f, 2.0f }, colors::Red },
 		{ {  3.0f, -2.0f, 2.0f }, colors::Green },
-		{ { -3.0f, -2.0f, 2.0f }, colors::Blue }
+		{ { -3.0f, -2.0f, 2.0f }, colors::Blue },
+
+		// Tri 1
+		{ {  0.0f,  2.0f, 0.0f }, colors::Red },
+		{ {  1.5f, -1.0f, 0.0f }, colors::Red },
+		{ { -1.5f, -1.0f, 0.0f }, colors::Red },
 	};
 	
 	// Convert to Screen Space
 	std::vector<Vertex> vertices_screen;
 	VertexTransformationFunction(vertices_world, vertices_screen);
 
-	// General logic outline:
-	//		For each triangle:
-	//			For each pixel:
-	//				is the pixel within this triangle
+	const size_t maxTri{ vertices_screen.size() / 3 };
+
+	// Depth buffer
+	std::vector<float> depthBuffer(m_Width * m_Height);
+	std::fill(begin(depthBuffer), end(depthBuffer), FLT_MAX);
+	//std::fill_n(begin(depthBuffer), m_Width * m_Height, FLT_MAX);
 
 	//RENDER LOGIC
-
-	const size_t maxTri{ vertices_screen.size() / 3 };
 	for (size_t triNum{ }; triNum < maxTri; triNum++) {
 		const Vertex& v0 = vertices_screen[(triNum * 3) + 0];
 		const Vertex& v1 = vertices_screen[(triNum * 3) + 1];
@@ -89,25 +98,35 @@ void Renderer::Render()
 				if (in0 > 0 && in1 > 0 && in2 > 0) {
 					const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
 
-					const float mag0 = in0 / magnitude;
-					const float mag1 = in1 / magnitude;
-					const float mag2 = in2 / magnitude;
+					const float w0 = in0 / magnitude;
+					const float w1 = in1 / magnitude;
+					const float w2 = in2 / magnitude;
 
-					finalColor =	(mag0 * v0.color) +
-									(mag1 * v1.color) +
-									(mag2 * v2.color);
+					const float depth = 
+						w0 * (v0.position.z / 3) +
+						w1 * (v1.position.z / 3) +
+						w2 * (v2.position.z / 3);
+
+					if (depth < depthBuffer[px + (py * m_Width)]) {
+						depthBuffer[px + (py * m_Width)] = depth;
+
+						finalColor =	(w0 * v0.color) +
+										(w1 * v1.color) +
+										(w2 * v2.color);
+
+						//Update Color in Buffer
+						finalColor.MaxToOne();
+
+						m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
+							static_cast<uint8_t>(finalColor.r * 255),
+							static_cast<uint8_t>(finalColor.g * 255),
+							static_cast<uint8_t>(finalColor.b * 255));
+					}
 				}
-
-				//Update Color in Buffer
-				finalColor.MaxToOne();
-
-				m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
-					static_cast<uint8_t>(finalColor.r * 255),
-					static_cast<uint8_t>(finalColor.g * 255),
-					static_cast<uint8_t>(finalColor.b * 255));
 			}
 		}
 	}
+
 
 	//@END
 	//Update SDL Surface
