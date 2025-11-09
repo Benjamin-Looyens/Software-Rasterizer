@@ -44,23 +44,15 @@ void Renderer::Render()
 	SDL_LockSurface(m_pBackBuffer);
 
 	// Temporary vertices 
-	std::vector<Vector3> vertices_ndc {
-		{  0.0f,  0.5f, 1.0f },
-		{  0.5f, -0.5f, 1.0f },
-		{ -0.5f, -0.5f, 1.0f }
+	std::vector<Vertex> vertices_ndc {
+		{ {  0.0f,  0.5f, 1.0f } },
+		{ {  0.5f, -0.5f, 1.0f } },
+		{ { -0.5f, -0.5f, 1.0f } }
 	};
 	
-	std::vector<Vector3> vertices_screen;
-	vertices_screen.resize(vertices_ndc.size());
-
 	// Convert to Screen Space
-	std::transform(begin(vertices_ndc), end(vertices_ndc), begin(vertices_screen), 
-		[&](const Vector3& vert) { 
-			return Vector3( ((vert.x + 1.0f) / 2.0f) * m_Width,
-							((1.0f - vert.y) / 2.0f) * m_Height,
-							vert.z); 
-		}
-	);
+	std::vector<Vertex> vertices_screen;
+	VertexTransformationFunction(vertices_ndc, vertices_screen);
 
 	// General logic outline:
 	//		For each triangle:
@@ -79,16 +71,16 @@ void Renderer::Render()
 			
 			const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
 
-			const Vector3 eV0 = vertices_screen[1] - vertices_screen[0];
-			const Vector3 cV0 = pixel3 - vertices_screen[0];
+			const Vector3 eV0 = vertices_screen[1].position - vertices_screen[0].position;
+			const Vector3 cV0 = pixel3 - vertices_screen[0].position;
 			const bool in0 = Vector3::Cross(eV0, cV0).z > 0;
 
-			const Vector3 eV1 = vertices_screen[2] - vertices_screen[1];
-			const Vector3 cV1 = pixel3 - vertices_screen[1];
+			const Vector3 eV1 = vertices_screen[2].position - vertices_screen[1].position;
+			const Vector3 cV1 = pixel3 - vertices_screen[1].position;
 			const bool in1 = Vector3::Cross(eV1, cV1).z > 0;
 
-			const Vector3 eV2 = vertices_screen[0] - vertices_screen[2];
-			const Vector3 cV2 = pixel3 - vertices_screen[2];
+			const Vector3 eV2 = vertices_screen[0].position - vertices_screen[2].position;
+			const Vector3 cV2 = pixel3 - vertices_screen[2].position;
 			const bool in2 = Vector3::Cross(eV2, cV2).z > 0;
 
 			if (in0 && in1 && in2) finalColor = colors::White;
@@ -114,6 +106,17 @@ void Renderer::Render()
 void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
 {
 	//Todo > W1 Projection Stage
+	vertices_out.resize(vertices_in.size());
+
+	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
+		[&](const Vertex& vert) {
+			return Vertex{ Vector3{
+				((vert.position.x + 1.0f) / 2.0f) * m_Width,
+				((1.0f - vert.position.y) / 2.0f) * m_Height,
+				vert.position.z 
+			} };
+		}
+	);
 }
 
 bool Renderer::SaveBufferToImage() const
