@@ -20,6 +20,9 @@ namespace dae
 		float fovAngle{90.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
 
+		float movSpeed{ 10.0f };
+		float rotSpeed{ 0.2f };
+
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
 		Vector3 right{Vector3::UnitX};
@@ -29,6 +32,10 @@ namespace dae
 
 		Matrix invViewMatrix{};
 		Matrix viewMatrix{};
+		bool viewDirty = true;
+
+		Matrix projectMatrix{};
+		bool projectDirty = true;
 
 		void Initialize(float _fovAngle = 90.f, Vector3 _origin = {0.f,0.f,0.f})
 		{
@@ -60,12 +67,72 @@ namespace dae
 		{
 			const float deltaTime = pTimer->GetElapsed();
 
-			//Camera Update Logic
-			//...
+			Vector3 movement{};
+			Vector3 rotation{};
+
+			bool movDirty{};
+			bool rotDirty{};
+
+			// Keyboard Input
+			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+
+			if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP]) { movement += forward; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN]) { movement -= forward; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT]) { movement += right; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT]) { movement -= right; movDirty = true; }
+
+			if (pKeyboardState[SDL_SCANCODE_SPACE]) { movement += Vector3::UnitY; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT]) { movement -= Vector3::UnitY; movDirty = true; }
+
+			// Mouse Input
+			int mouseX{}, mouseY{};
+			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+			const bool rDown = mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT);
+			const bool lDown = mouseState & SDL_BUTTON(SDL_BUTTON_LEFT);
+
+			if (rDown && lDown) {
+				movement.y -= mouseY;
+				movement.x += mouseX;
+				movDirty = true;
+			}
+			else if (rDown) {
+				rotation.y += mouseX;
+				rotation.x -= mouseY;
+				rotDirty = true;
+			}
+			else if (lDown) {
+				movement -= forward * static_cast<float>(mouseY);
+				rotation.y += mouseX;
+
+				movDirty = true;
+				rotDirty = true;
+			}
+
+			if (movDirty && movement.Normalize() > 0.0f) { // NOTE : Ideally, the mouse movement shouldn't be normalized but making a bool just for that seems messy
+				origin += movement * movSpeed * deltaTime;
+				//toWorldDirty = true;
+			}
+			if (rotDirty && rotation.Magnitude() > 0.0f) { // NOTE : In theory I could do SqrMagnitude?
+				const Vector3 scaledRotation = rotation * rotSpeed * deltaTime;
+
+				constexpr float OFFSET = 0.05f;
+				totalYaw += scaledRotation.x;
+				totalYaw = std::clamp(totalYaw, -PI * 0.5f + OFFSET, PI * 0.5f - OFFSET);
+
+				// Ensure always positive between 0 -> 6.28...
+				totalPitch = std::fmodf(std::fmodf(scaledRotation.y + totalPitch, PI_2) + PI_2, PI_2);
+
+				const Matrix fullRotMatrix = Matrix::CreateRotationX(totalYaw) * Matrix::CreateRotationY(totalPitch);
+				forward = fullRotMatrix.TransformVector(Vector3::UnitZ);
+				//toWorldDirty = true;
+			}
 
 			//Update Matrices
-			CalculateViewMatrix();
-			CalculateProjectionMatrix(); //Try to optimize this - should only be called once or when fov/aspectRatio changes
+			if (viewDirty) CalculateViewMatrix(); // TODO : Figure out when to mark viewDirty
+			if (projectDirty) CalculateProjectionMatrix();	// TODO : Figure out when to mark projectDirty
+															//		comment from starter files: Try to optimize this (CalculateProjectionMatrix),
+															//									should only be called once or when fov/aspectRatio changes
 		}
 	};
 }
