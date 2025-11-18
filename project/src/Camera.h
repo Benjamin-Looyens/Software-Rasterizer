@@ -21,7 +21,7 @@ namespace dae
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
 
 		float movSpeed{ 10.0f };
-		float rotSpeed{ 0.2f };
+		float rotSpeed{ 0.6f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};

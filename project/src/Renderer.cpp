@@ -82,20 +82,18 @@ void Renderer::Render()
 		const Vector3 eV1 = v2.position - v1.position;
 		const Vector3 eV2 = v0.position - v2.position;
 
-		//const Vector2 min{
-		//	std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
-		//	std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
-		//};
-		//const Vector2 max{
-		//	std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
-		//	std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
-		//};
-		//// TODO : Change to uint, there's no need for these to be int
-		//for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
-		//	for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
+		const Vector2 min{
+			std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
+			std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+		};
+		const Vector2 max{
+			std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
+			std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+		};
 
-		for (int px{ }; px < m_Width; ++px) {
-			for (int py{ }; py < m_Height; ++py) {
+		// TODO : Change to uint, there's no need for these to be int
+		for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
+			for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
 				const int index = px + (py * m_Width);
 				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
 				const Vector3 pixel3{ pixel.x, pixel.y, 1.0f };
