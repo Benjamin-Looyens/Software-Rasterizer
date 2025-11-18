@@ -71,11 +71,6 @@ int main(int argc, char* args[])
 			case SDL_QUIT:
 				isLooping = false;
 				break;
-			case SDL_KEYDOWN:
-				if (e.key.keysym.scancode == SDL_SCANCODE_E)
-					pRenderer->PrintMatrix();
-				if (e.key.keysym.scancode == SDL_SCANCODE_R)
-					pRenderer->ToggleDepthRender();
 			case SDL_KEYUP:
 				if (e.key.keysym.scancode == SDL_SCANCODE_X)
 					takeScreenshot = true;

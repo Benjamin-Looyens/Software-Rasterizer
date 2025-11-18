@@ -32,9 +32,6 @@ namespace dae
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
 
-		void PrintMatrix() const;
-		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
-
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -48,8 +45,5 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
-
-		// TEMP
-		bool m_RenderDepth{ false };
 	};
 }

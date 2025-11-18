@@ -9,8 +9,6 @@
 #include "Utils.h"
 
 // Standard includes
-#include <iostream>
-#include <iomanip>
 #include <limits>
 
 using namespace dae;
@@ -96,9 +94,6 @@ void Renderer::Render()
 		//for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
 		//	for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
 
-		// TODO :	Print out the matrix where it is correct, and then as well where it is wrong
-		//			Additionally, check the depth value when you do that for each of those pixels
-
 		for (int px{ }; px < m_Width; ++px) {
 			for (int py{ }; py < m_Height; ++py) {
 				const int index = px + (py * m_Width);
@@ -143,24 +138,9 @@ void Renderer::Render()
 					if (depth < m_DepthBuffer[index]) {
 						m_DepthBuffer[index] = depth;
 
-						ColorRGB finalColor;
-
-						// Messy but its just for testing right now
-						if (m_RenderDepth) {
-							switch (triNum) {
-							case 0:
-								finalColor = { 0.0f, 0.0f, 1 / depth };
-								break;
-							case 1:
-								finalColor = { 0.0f, 1 / depth, 0.0f };
-								break;
-							}
-						}
-						else {
-							finalColor =	(w0 * v0.color) +
-											(w1 * v1.color) +
-											(w2 * v2.color);
-						}
+						ColorRGB finalColor =	(w0 * v0.color) +
+												(w1 * v1.color) +
+												(w2 * v2.color);
 						
 						//Update Color in Buffer
 						finalColor.MaxToOne();
@@ -205,18 +185,6 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 			};
 		}
 	);
-}
-
-void dae::Renderer::PrintMatrix() const
-{
-	const Matrix& vMatrix = m_Camera.viewMatrix;
-	std::cout << "[VIEW MATRIX]\n";
-
-	std::cout << std::fixed << std::setprecision(4)
-	<< "[" << vMatrix[0].x << ", " << vMatrix[0].y << ", " << vMatrix[0].z << ", " << vMatrix[0].w << "]" << "\n"
-	<< "[" << vMatrix[1].x << ", " << vMatrix[1].y << ", " << vMatrix[1].z << ", " << vMatrix[1].w << "]" << "\n"
-	<< "[" << vMatrix[2].x << ", " << vMatrix[2].y << ", " << vMatrix[2].z << ", " << vMatrix[2].w << "]" << "\n"
-	<< "[" << vMatrix[3].x << ", " << vMatrix[3].y << ", " << vMatrix[3].z << ", " << vMatrix[3].w << "]" << "\n\n";
 }
 
 bool Renderer::SaveBufferToImage() const
