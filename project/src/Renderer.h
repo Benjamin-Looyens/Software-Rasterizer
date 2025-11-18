@@ -32,7 +32,11 @@ namespace dae
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
 
+		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
+
 	private:
+		void UpdateColor(const int& index, ColorRGB& col);
+
 		SDL_Window* m_pWindow{};
 
 		SDL_Surface* m_pFrontBuffer{ nullptr };
@@ -45,5 +49,7 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+
+		bool m_RenderBounds{ false };
 	};
 }

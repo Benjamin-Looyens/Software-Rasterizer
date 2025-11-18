@@ -95,6 +95,13 @@ void Renderer::Render()
 		for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
 			for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
 				const int index = px + (py * m_Width);
+
+				if (m_RenderBounds) {
+					ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
+					UpdateColor(index, finalColor);
+					continue;
+				}
+
 				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
 				const Vector3 pixel3{ pixel.x, pixel.y, 1.0f };
 
@@ -140,13 +147,7 @@ void Renderer::Render()
 												(w1 * v1.color) +
 												(w2 * v2.color);
 						
-						//Update Color in Buffer
-						finalColor.MaxToOne();
-
-						m_pBackBufferPixels[index] = SDL_MapRGB(m_pBackBuffer->format,
-							static_cast<uint8_t>(finalColor.r * 255),
-							static_cast<uint8_t>(finalColor.g * 255),
-							static_cast<uint8_t>(finalColor.b * 255));
+						UpdateColor(index, finalColor);
 					}
 				}
 			}
@@ -183,6 +184,17 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 			};
 		}
 	);
+}
+
+void dae::Renderer::UpdateColor(const int& index, ColorRGB& col)
+{
+	//Update Color in Buffer
+	col.MaxToOne();
+
+	m_pBackBufferPixels[index] = SDL_MapRGB(m_pBackBuffer->format,
+		static_cast<uint8_t>(col.r * 255),
+		static_cast<uint8_t>(col.g * 255),
+		static_cast<uint8_t>(col.b * 255));
 }
 
 bool Renderer::SaveBufferToImage() const
