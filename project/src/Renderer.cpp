@@ -8,6 +8,11 @@
 #include "Texture.h"
 #include "Utils.h"
 
+// Standard includes
+#include <iostream>
+#include <iomanip>
+#include <limits>
+
 using namespace dae;
 
 Renderer::Renderer(SDL_Window* pWindow) :
@@ -25,11 +30,12 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	//Initialize Camera
 	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
+
+	m_DepthBuffer.resize(m_Width * m_Height);
 }
 
 Renderer::~Renderer()
 {
-	//delete[] m_pDepthBufferPixels;
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -40,14 +46,14 @@ void Renderer::Update(Timer* pTimer)
 void Renderer::Render()
 {
 	//@START
-	// Clear buffer
-	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 0, 0, 0));
+	// Clear BackBuffer
+	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 50, 50, 50));
 
-	//Lock BackBuffer
+	// Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
 
-	// Temporary vertices 
-	std::vector<Vertex> vertices_world {
+	// Temporary test vertices 
+	std::vector<Vertex> verticesWorld {
 		// Tri 0
 		{ {  0.0f,  4.0f, 2.0f }, colors::Red },
 		{ {  3.0f, -2.0f, 2.0f }, colors::Green },
@@ -60,31 +66,44 @@ void Renderer::Render()
 	};
 	
 	// Convert to Screen Space
-	std::vector<Vertex> vertices_screen;
-	VertexTransformationFunction(vertices_world, vertices_screen);
+	std::vector<Vertex> verticesScreen;
+	VertexTransformationFunction(verticesWorld, verticesScreen);
 
-	const size_t maxTri{ vertices_screen.size() / 3 };
+	const size_t maxTri{ verticesScreen.size() / 3 };
 
-	// Depth buffer
-	std::vector<float> depthBuffer(m_Width * m_Height);
-	std::fill(begin(depthBuffer), end(depthBuffer), FLT_MAX);
-	//std::fill_n(begin(depthBuffer), m_Width * m_Height, FLT_MAX);
+	// Reset Depth buffer
+	std::fill(begin(m_DepthBuffer), end(m_DepthBuffer), std::numeric_limits<float>::max());
 
 	//RENDER LOGIC
 	for (size_t triNum{ }; triNum < maxTri; triNum++) {
-		const Vertex& v0 = vertices_screen[(triNum * 3) + 0];
-		const Vertex& v1 = vertices_screen[(triNum * 3) + 1];
-		const Vertex& v2 = vertices_screen[(triNum * 3) + 2];
+		const Vertex& v0 = verticesScreen[(triNum * 3) + 0];
+		const Vertex& v1 = verticesScreen[(triNum * 3) + 1];
+		const Vertex& v2 = verticesScreen[(triNum * 3) + 2];
 
 		const Vector3 eV0 = v1.position - v0.position;
 		const Vector3 eV1 = v2.position - v1.position;
 		const Vector3 eV2 = v0.position - v2.position;
 
-		for (int px{}; px < m_Width; ++px) {
-			for (int py{}; py < m_Height; ++py) {
-				ColorRGB finalColor{ };
+		//const Vector2 min{
+		//	std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
+		//	std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+		//};
+		//const Vector2 max{
+		//	std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
+		//	std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+		//};
+		//// TODO : Change to uint, there's no need for these to be int
+		//for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
+		//	for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
+
+		// TODO :	Print out the matrix where it is correct, and then as well where it is wrong
+		//			Additionally, check the depth value when you do that for each of those pixels
+
+		for (int px{ }; px < m_Width; ++px) {
+			for (int py{ }; py < m_Height; ++py) {
+				const int index = px + (py * m_Width);
 				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
-				const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
+				const Vector3 pixel3{ pixel.x, pixel.y, 1.0f };
 
 				const Vector3 cV0 = pixel3 - v0.position;
 				const float in0 = Vector3::Cross(eV0, cV0).z;
@@ -95,29 +114,58 @@ void Renderer::Render()
 				const Vector3 cV2 = pixel3 - v2.position;
 				const float in2 = Vector3::Cross(eV2, cV2).z;
 
-				if (in0 > 0 && in1 > 0 && in2 > 0) {
-					const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
+				if (in0 >= 0 && in1 >= 0 && in2 >= 0) {
+					//const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
+					//const float magnitude = Vector3::Cross(eV0, v2.position - v0.position).z;
+					const float magnitude = in0 + in1 + in2;
 
 					const float w0 = in0 / magnitude;
 					const float w1 = in1 / magnitude;
 					const float w2 = in2 / magnitude;
+					
+					//const float inv0 = 1 / v0.position.z;
+					//const float inv1 = 1 / v1.position.z;
+					//const float inv2 = 1 / v2.position.z;
+					//
+					//const float depth = 1 / (
+					//	w0 * inv0 +
+					//	w1 * inv1 +
+					//	w2 * inv2
+					//);
 
 					const float depth = 
-						w0 * (v0.position.z / 3) +
-						w1 * (v1.position.z / 3) +
-						w2 * (v2.position.z / 3);
+						w0 * v0.position.z +
+						w1 * v1.position.z +
+						w2 * v2.position.z;
+					
+					//if (depth < 0.0f) continue;
 
-					if (depth < depthBuffer[px + (py * m_Width)]) {
-						depthBuffer[px + (py * m_Width)] = depth;
+					if (depth < m_DepthBuffer[index]) {
+						m_DepthBuffer[index] = depth;
 
-						finalColor =	(w0 * v0.color) +
-										(w1 * v1.color) +
-										(w2 * v2.color);
+						ColorRGB finalColor;
 
+						// Messy but its just for testing right now
+						if (m_RenderDepth) {
+							switch (triNum) {
+							case 0:
+								finalColor = { 0.0f, 0.0f, 1 / depth };
+								break;
+							case 1:
+								finalColor = { 0.0f, 1 / depth, 0.0f };
+								break;
+							}
+						}
+						else {
+							finalColor =	(w0 * v0.color) +
+											(w1 * v1.color) +
+											(w2 * v2.color);
+						}
+						
 						//Update Color in Buffer
 						finalColor.MaxToOne();
 
-						m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
+						m_pBackBufferPixels[index] = SDL_MapRGB(m_pBackBuffer->format,
 							static_cast<uint8_t>(finalColor.r * 255),
 							static_cast<uint8_t>(finalColor.g * 255),
 							static_cast<uint8_t>(finalColor.b * 255));
@@ -126,7 +174,6 @@ void Renderer::Render()
 			}
 		}
 	}
-
 
 	//@END
 	//Update SDL Surface
@@ -138,37 +185,38 @@ void Renderer::Render()
 void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
 {
 	vertices_out.resize(vertices_in.size());
-
-	// Steps:
-	// Transform with Camera VIEW matrix
-	// Apply perspective divide
-	// Convert NDC > Screen space
 	
 	const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
-
+	
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
-			const Vector3 vertToCam = m_Camera.viewMatrix.TransformPoint(vert.position);
+			const Vector3 view = m_Camera.viewMatrix.TransformPoint(vert.position);
 			
-			const Vector3 project {
-				vertToCam.x / vertToCam.z,
-				vertToCam.y / vertToCam.z,
-				vertToCam.z
-			};
-			
-			const Vector3 ndc = {	project.x / (aspectRatio * m_Camera.fov),
-									project.y / (m_Camera.fov),
-									project.z };
-
+			const Vector3 ndc = {	view.x / (view.z * aspectRatio * m_Camera.fov),
+									view.y / (view.z * m_Camera.fov),
+									vert.position.z }; // Is this correct ???
+	
 			return Vertex{ Vector3{
-				((ndc.x + 1.0f) / 2.0f)* m_Width,
-				((1.0f - ndc.y) / 2.0f)* m_Height,
+				((ndc.x + 1.0f) / 2.0f) * m_Width,
+				((1.0f - ndc.y) / 2.0f) * m_Height,
 				ndc.z
 			}, 
 				vert.color
 			};
 		}
 	);
+}
+
+void dae::Renderer::PrintMatrix() const
+{
+	const Matrix& vMatrix = m_Camera.viewMatrix;
+	std::cout << "[VIEW MATRIX]\n";
+
+	std::cout << std::fixed << std::setprecision(4)
+	<< "[" << vMatrix[0].x << ", " << vMatrix[0].y << ", " << vMatrix[0].z << ", " << vMatrix[0].w << "]" << "\n"
+	<< "[" << vMatrix[1].x << ", " << vMatrix[1].y << ", " << vMatrix[1].z << ", " << vMatrix[1].w << "]" << "\n"
+	<< "[" << vMatrix[2].x << ", " << vMatrix[2].y << ", " << vMatrix[2].z << ", " << vMatrix[2].w << "]" << "\n"
+	<< "[" << vMatrix[3].x << ", " << vMatrix[3].y << ", " << vMatrix[3].z << ", " << vMatrix[3].w << "]" << "\n\n";
 }
 
 bool Renderer::SaveBufferToImage() const

@@ -32,6 +32,9 @@ namespace dae
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
 
+		void PrintMatrix() const;
+		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
+
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -39,11 +42,14 @@ namespace dae
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
 
-		//float* m_pDepthBufferPixels{};
+		std::vector<float> m_DepthBuffer{}; // HACK : For later use, prob change this to a raw array
 
 		Camera m_Camera{};
 
 		int m_Width{};
 		int m_Height{};
+
+		// TEMP
+		bool m_RenderDepth{ false };
 	};
 }

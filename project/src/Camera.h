@@ -3,6 +3,8 @@
 #include <SDL_keyboard.h>
 #include <SDL_mouse.h>
 
+#include <iostream>
+
 #include "Maths.h"
 #include "Timer.h"
 
@@ -43,6 +45,26 @@ namespace dae
 			fov = tanf((fovAngle * TO_RADIANS) / 2.f);
 
 			origin = _origin;
+
+			// Set extracted matrices here
+			// Go to pixels where you can see it wrong -> Print those depth values
+
+			// Correct render matrix:
+			//viewMatrix = {
+			//	{ 0.8007, -0.0807, 0.5936, 0.0000 },
+			//	{ 0.0000, 0.9909, 0.1348, 0.0000 },
+			//	{ -0.5990, -0.1079, 0.7934, 0.0000 },
+			//	{ 1.9827, -0.5677, 5.6923, 1.0000 }
+			//};
+
+			// Incorrect render matrix:
+			//viewMatrix = {
+			//	{ 0.5425, -0.1072, 0.8332, 0.0000 },
+			//	{ 0.0000, 0.9918, 0.1277, 0.0000 },
+			//	{ -0.8400, -0.0693, 0.5381, 0.0000 },
+			//	{ -0.1283, -0.5694, 6.0262, 1.0000 }
+			//};
+			//viewDirty = false;
 		}
 
 		void CalculateViewMatrix()
@@ -52,9 +74,13 @@ namespace dae
 			//Inverse(ONB) => ViewMatrix
 
 			if (viewDirty) {
-				invViewMatrix = CalculateCameraToWorld();	// CameraToWorld
-				viewMatrix = invViewMatrix.Inverse();		// WorldToCamera (ViewMatrix)
-				//viewMatrix = Matrix::CreateLookAtLH(origin, forward, up);
+				//invViewMatrix = CalculateCameraToWorld();	// CameraToWorld
+				//viewMatrix = invViewMatrix.Inverse();		// WorldToCamera (ViewMatrix)
+				//viewDirty = false;
+
+				invViewMatrix = CalculateCameraToWorld();
+				viewMatrix = Matrix::Inverse(invViewMatrix);
+				viewDirty = false;
 			}
 
 			//ViewMatrix => Matrix::CreateLookAtLH(...) [not implemented yet]
@@ -113,6 +139,10 @@ namespace dae
 				movDirty = true;
 			}
 			else if (rDown) {
+				//int trueMouseX{}, trueMouseY{};
+				//const uint32_t trueMouse = SDL_GetMouseState(&trueMouseX, &trueMouseY);
+				//std::cout << "MousePos: [" << trueMouseX << ", " << trueMouseY << "]\n";
+
 				rotation.y += mouseX;
 				rotation.x -= mouseY;
 				rotDirty = true;
