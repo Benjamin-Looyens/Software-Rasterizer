@@ -103,16 +103,16 @@ void Renderer::Render()
 				}
 
 				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
-				const Vector3 pixel3{ pixel.x, pixel.y, 1.0f };
+				const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
 
 				const Vector3 cV0 = pixel3 - v0.position;
-				const float in0 = Vector3::Cross(eV0, cV0).z;
+				const float in0 = Vector3::CrossZ(eV0, cV0);
 
 				const Vector3 cV1 = pixel3 - v1.position;
-				const float in1 = Vector3::Cross(eV1, cV1).z;
+				const float in1 = Vector3::CrossZ(eV1, cV1);
 
 				const Vector3 cV2 = pixel3 - v2.position;
-				const float in2 = Vector3::Cross(eV2, cV2).z;
+				const float in2 = Vector3::CrossZ(eV2, cV2);
 
 				if (in0 >= 0 && in1 >= 0 && in2 >= 0) {
 					//const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
