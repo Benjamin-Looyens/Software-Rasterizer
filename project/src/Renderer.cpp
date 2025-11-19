@@ -94,13 +94,15 @@ void Renderer::Render()
 		const Vector3 eV1 = v2.position - v1.position;
 		const Vector3 eV2 = v0.position - v2.position;
 
+		constexpr float TRIANGLE_BOUNDS_OFFSET = 0.5f; // NOTE : Possibly check if needs to be bigger
+
 		const Vector2 min{
-			std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
-			std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+			std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)) - TRIANGLE_BOUNDS_OFFSET,
+			std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) - TRIANGLE_BOUNDS_OFFSET
 		};
 		const Vector2 max{
-			std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)),
-			std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height))
+			std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width)) + TRIANGLE_BOUNDS_OFFSET,
+			std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) + TRIANGLE_BOUNDS_OFFSET
 		};
 
 		// TODO : Change to uint, there's no need for these to be int
