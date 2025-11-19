@@ -51,44 +51,48 @@ void Renderer::Render()
 	// Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
 
-	// Temporary test vertices 
+	// Temporary test vertices
 	std::vector<Vertex> quadVertices{
-		{ { -3.0f,  3.0f, -2.0f }, colors::White },
-		{ {  0.0f,  3.0f, -2.0f }, colors::White },
-		{ {  3.0f,  3.0f, -2.0f }, colors::White },
-		{ { -3.0f,  0.0f, -2.0f }, colors::White },
-		{ {  0.0f,  0.0f, -2.0f }, colors::White },
-		{ {  3.0f,  0.0f, -2.0f }, colors::White },
-		{ { -3.0f, -3.0f, -2.0f }, colors::White },
-		{ {  0.0f, -3.0f, -2.0f }, colors::White },
-		{ {  3.0f, -3.0f, -2.0f }, colors::White },
+		{ { -3.0f,  3.0f, -2.0f }, colors::White },	// 0
+		{ {  0.0f,  3.0f, -2.0f }, colors::Red },	// 1
+		{ {  3.0f,  3.0f, -2.0f }, colors::Green },	// 2
+		{ { -3.0f,  0.0f, -2.0f }, colors::Blue },	// 3
+		{ {  0.0f,  0.0f, -2.0f }, colors::White },	// 4
+		{ {  3.0f,  0.0f, -2.0f }, colors::Red },	// 5
+		{ { -3.0f, -3.0f, -2.0f }, colors::Green },	// 6
+		{ {  0.0f, -3.0f, -2.0f }, colors::Blue },	// 7
+		{ {  3.0f, -3.0f, -2.0f }, colors::White },	// 8
 	};
 
 	std::vector<int> quadIndices{
 		3, 0, 4,
-		0, 1, 4,
-		4, 1, 5,
-		1, 2, 5,
+		1, 5, 2,
+
+		2, 6,
+		
 		6, 3, 7,
-		3, 4, 7,
-		7, 4, 8,
-		4, 5, 8,
+		4, 8, 5,
 	};
 
 	// Convert to Screen Space
 	std::vector<Vertex> verticesScreen; // Could just init with verticesWorld.size()
 	VertexTransformationFunction(quadVertices, verticesScreen);
 
-	const size_t maxTri{ quadIndices.size() / 3 };
-
 	// Reset Depth buffer
 	std::fill(begin(m_DepthBuffer), end(m_DepthBuffer), std::numeric_limits<float>::max());
 
 	//RENDER LOGIC
-	for (size_t triNum{ }; triNum < maxTri; triNum++) {
-		const Vertex& v0 = verticesScreen[quadIndices[(triNum * 3) + 0]];
-		const Vertex& v1 = verticesScreen[quadIndices[(triNum * 3) + 1]];
-		const Vertex& v2 = verticesScreen[quadIndices[(triNum * 3) + 2]];
+	for (size_t index{ }; index < quadIndices.size() - 2; index++) {
+		int i0 = quadIndices[index];
+		int i1 = quadIndices[index + 1];
+		int i2 = quadIndices[index + 2];
+		
+		if (i0 == i1 || i1 == i2) continue; // Degenerate triangle
+		if (index & 1) std::swap(i1, i2);
+		
+		const Vertex& v0 = verticesScreen[i0];
+		const Vertex& v1 = verticesScreen[i1];
+		const Vertex& v2 = verticesScreen[i2];
 
 		const Vector3 eV0 = v1.position - v0.position;
 		const Vector3 eV1 = v2.position - v1.position;
@@ -108,11 +112,11 @@ void Renderer::Render()
 		// TODO : Change to uint, there's no need for these to be int
 		for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
 			for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
-				const int index = px + (py * m_Width);
+				const int pixelIndex = px + (py * m_Width);
 
 				if (m_RenderBounds) {
 					ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
-					UpdateColor(index, finalColor);
+					UpdateColor(pixelIndex, finalColor);
 					continue;
 				}
 
@@ -142,14 +146,14 @@ void Renderer::Render()
 					
 					//if (depth < 0.0f) continue;
 
-					if (depth < m_DepthBuffer[index]) {
-						m_DepthBuffer[index] = depth;
+					if (depth < m_DepthBuffer[pixelIndex]) {
+						m_DepthBuffer[pixelIndex] = depth;
 
 						ColorRGB finalColor =	(w0 * v0.color) +
 												(w1 * v1.color) +
 												(w2 * v2.color);
 						
-						UpdateColor(index, finalColor);
+						UpdateColor(pixelIndex, finalColor);
 					}
 				}
 			}
