@@ -11,6 +11,7 @@ namespace dae
 	class Texture;
 	struct Mesh;
 	struct Vertex;
+	struct Vertex_Out;
 	class Timer;
 	class Scene;
 
@@ -30,7 +31,7 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
+		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 
