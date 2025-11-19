@@ -26,15 +26,18 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
 
 	//m_pDepthBufferPixels = new float[m_Width * m_Height];
+	m_DepthBuffer.resize(m_Width * m_Height);
+
+	// Load texture (TEMP)
+	m_pTexture = Texture::LoadFromFile("resources/uv_grid_2.png");
 
 	//Initialize Camera
 	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
-
-	m_DepthBuffer.resize(m_Width * m_Height);
 }
 
 Renderer::~Renderer()
 {
+	delete m_pTexture;
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -59,15 +62,15 @@ void Renderer::Render()
 		{
 			// Vertices
 			{
-				{ { -3.0f,  3.0f, -2.0f }, colors::White },	// 0
-				{ {  0.0f,  3.0f, -2.0f }, colors::White },	// 1
-				{ {  3.0f,  3.0f, -2.0f }, colors::White },	// 2
-				{ { -3.0f,  0.0f, -2.0f }, colors::White },	// 3
-				{ {  0.0f,  0.0f, -2.0f }, colors::White },	// 4
-				{ {  3.0f,  0.0f, -2.0f }, colors::White },	// 5
-				{ { -3.0f, -3.0f, -2.0f }, colors::White },	// 6
-				{ {  0.0f, -3.0f, -2.0f }, colors::White },	// 7
-				{ {  3.0f, -3.0f, -2.0f }, colors::White },	// 8
+				{ { -3.0f,  3.0f, -2.0f }, colors::White, { 0.0f, 0.0f } },	// 0
+				{ {  0.0f,  3.0f, -2.0f }, colors::White, { 0.5f, 0.0f } },	// 1
+				{ {  3.0f,  3.0f, -2.0f }, colors::White, { 1.0f, 0.0f } },	// 2
+				{ { -3.0f,  0.0f, -2.0f }, colors::White, { 0.0f, 0.5f } },	// 3
+				{ {  0.0f,  0.0f, -2.0f }, colors::White, { 0.5f, 0.5f } },	// 4
+				{ {  3.0f,  0.0f, -2.0f }, colors::White, { 1.0f, 0.5f } },	// 5
+				{ { -3.0f, -3.0f, -2.0f }, colors::White, { 0.0f, 1.0f } },	// 6
+				{ {  0.0f, -3.0f, -2.0f }, colors::White, { 0.5f, 1.0f } },	// 7
+				{ {  3.0f, -3.0f, -2.0f }, colors::White, { 1.0f, 1.0f } },	// 8
 			},
 
 			// Indices (List)
@@ -191,9 +194,15 @@ void Renderer::Render()
 						if (depth < m_DepthBuffer[pixelIndex]) {
 							m_DepthBuffer[pixelIndex] = depth;
 
-							ColorRGB finalColor =	(w0 * v0.color) +
-													(w1 * v1.color) +
-													(w2 * v2.color);
+							const Vector2 uv =	(w0 * v0.uv) +
+												(w1 * v1.uv) +
+												(w2 * v2.uv);
+
+							ColorRGB finalColor = m_pTexture->Sample(uv);
+
+							//ColorRGB finalColor =	(w0 * v0.color) +
+							//						(w1 * v1.color) +
+							//						(w2 * v2.color);
 						
 							UpdateColor(pixelIndex, finalColor);
 						}
@@ -231,7 +240,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 				clip.z,
 				1.0f
 			}, 
-				vert.color
+				vert.color, vert.uv
 			};
 		}
 	);

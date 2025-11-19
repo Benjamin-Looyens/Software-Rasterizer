@@ -43,6 +43,9 @@ namespace dae
 		SDL_Surface* m_pFrontBuffer{ nullptr };
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
+		
+		// TEMP Texture
+		Texture* m_pTexture{ nullptr };
 
 		std::vector<float> m_DepthBuffer{}; // HACK : For later use, prob change this to a raw array
 
