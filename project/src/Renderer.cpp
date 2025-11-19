@@ -70,32 +70,32 @@ void Renderer::Render()
 				{ {  3.0f, -3.0f, -2.0f }, colors::White },	// 8
 			},
 
-			//// Indices (List)
-			//{
-			//	3, 0, 4,
-			//	0, 1, 4,
-			//	4, 1, 5,
-			//	1, 2, 5,
-			//	6, 3, 7,
-			//	3, 4, 7,
-			//	7, 4, 8,
-			//	4, 5, 8,
-			//},
-			//
-			//PrimitiveTopology::TriangleList
-			
-			// Indices (Strip)
+			// Indices (List)
 			{
 				3, 0, 4,
-				1, 5, 2,
-
-				2, 6,
-
+				0, 1, 4,
+				4, 1, 5,
+				1, 2, 5,
 				6, 3, 7,
-				4, 8, 5,
+				3, 4, 7,
+				7, 4, 8,
+				4, 5, 8,
 			},
-
-			PrimitiveTopology::TriangleStrip
+			
+			PrimitiveTopology::TriangleList
+			
+			//// Indices (Strip)
+			//{
+			//	3, 0, 4,
+			//	1, 5, 2,
+			//
+			//	2, 6,
+			//
+			//	6, 3, 7,
+			//	4, 8, 5,
+			//},
+			//
+			//PrimitiveTopology::TriangleStrip
 		}
 	};
 
@@ -107,13 +107,26 @@ void Renderer::Render()
 		const auto& indices = mesh.indices;
 		const auto& vertices = mesh.vertices_out;
 
-		for (size_t index{ }; index < indices.size() - 2; index++) {
-			int i0 = indices[index];
+		int loopAdd;
+		int sizeCheck;
+		switch (mesh.primitiveTopology) {
+		case PrimitiveTopology::TriangleList:
+			loopAdd = 3;
+			sizeCheck = 0;
+			break;
+		case PrimitiveTopology::TriangleStrip:
+			loopAdd = 1;
+			sizeCheck = 2;
+			break;
+		}
+
+		for (size_t index{ }; index < indices.size() - sizeCheck; index += loopAdd) {
+			const int i0 = indices[index];
 			int i1 = indices[index + 1];
 			int i2 = indices[index + 2];
 		
 			if (i0 == i1 || i1 == i2) continue; // Degenerate triangle
-			if (index & 1) std::swap(i1, i2);
+			if (index & 1 && sizeCheck) std::swap(i1, i2); // HACK : The && sizeCheck isnt ideal but works
 		
 			const Vertex_Out& v0 = vertices[i0];
 			const Vertex_Out& v1 = vertices[i1];
