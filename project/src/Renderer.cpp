@@ -10,6 +10,7 @@
 
 // Standard includes
 #include <limits>
+#include <iostream>
 
 using namespace dae;
 
@@ -51,32 +52,43 @@ void Renderer::Render()
 	SDL_LockSurface(m_pBackBuffer);
 
 	// Temporary test vertices 
-	std::vector<Vertex> verticesWorld {
-		// Tri 0
-		{ {  0.0f,  4.0f, 2.0f }, colors::Red },
-		{ {  3.0f, -2.0f, 2.0f }, colors::Green },
-		{ { -3.0f, -2.0f, 2.0f }, colors::Blue },
-
-		// Tri 1
-		{ {  0.0f,  2.0f, 0.0f }, colors::Red },
-		{ {  1.5f, -1.0f, 0.0f }, colors::Red },
-		{ { -1.5f, -1.0f, 0.0f }, colors::Red },
+	std::vector<Vertex> quadVertices{
+		{ { -3.0f,  3.0f, -2.0f }, colors::White },
+		{ {  0.0f,  3.0f, -2.0f }, colors::White },
+		{ {  3.0f,  3.0f, -2.0f }, colors::White },
+		{ { -3.0f,  0.0f, -2.0f }, colors::White },
+		{ {  0.0f,  0.0f, -2.0f }, colors::White },
+		{ {  3.0f,  0.0f, -2.0f }, colors::White },
+		{ { -3.0f, -3.0f, -2.0f }, colors::White },
+		{ {  0.0f, -3.0f, -2.0f }, colors::White },
+		{ {  3.0f, -3.0f, -2.0f }, colors::White },
 	};
-	
+
+	std::vector<int> quadIndices{
+		3, 0, 4,
+		0, 1, 4,
+		4, 1, 5,
+		1, 2, 5,
+		6, 3, 7,
+		3, 4, 7,
+		7, 4, 8,
+		4, 5, 8,
+	};
+
 	// Convert to Screen Space
 	std::vector<Vertex> verticesScreen; // Could just init with verticesWorld.size()
-	VertexTransformationFunction(verticesWorld, verticesScreen);
+	VertexTransformationFunction(quadVertices, verticesScreen);
 
-	const size_t maxTri{ verticesScreen.size() / 3 };
+	const size_t maxTri{ quadIndices.size() / 3 };
 
 	// Reset Depth buffer
 	std::fill(begin(m_DepthBuffer), end(m_DepthBuffer), std::numeric_limits<float>::max());
 
 	//RENDER LOGIC
 	for (size_t triNum{ }; triNum < maxTri; triNum++) {
-		const Vertex& v0 = verticesScreen[(triNum * 3) + 0];
-		const Vertex& v1 = verticesScreen[(triNum * 3) + 1];
-		const Vertex& v2 = verticesScreen[(triNum * 3) + 2];
+		const Vertex& v0 = verticesScreen[quadIndices[(triNum * 3) + 0]];
+		const Vertex& v1 = verticesScreen[quadIndices[(triNum * 3) + 1]];
+		const Vertex& v2 = verticesScreen[quadIndices[(triNum * 3) + 2]];
 
 		const Vector3 eV0 = v1.position - v0.position;
 		const Vector3 eV1 = v2.position - v1.position;
@@ -115,8 +127,6 @@ void Renderer::Render()
 				const float in2 = Vector3::CrossZ(eV2, cV2);
 
 				if (in0 >= 0 && in1 >= 0 && in2 >= 0) {
-					//const float magnitude = Vector3::Cross(eV0, -eV2).z; //-eV2 = vertices_screen[2].position - vertices_screen[0].position
-					//const float magnitude = Vector3::Cross(eV0, v2.position - v0.position).z;
 					const float magnitude = in0 + in1 + in2;
 
 					const float w0 = in1 / magnitude; // For some reason shifting the inside checks over by 1 vertex fixed my clipping issue ????
