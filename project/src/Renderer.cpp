@@ -184,25 +184,25 @@ void Renderer::Render()
 						const float w1 = in2 / magnitude; 
 						const float w2 = in0 / magnitude; 
 
-						const float depth = 
-							w0 * v0.position.z +
-							w1 * v1.position.z +
-							w2 * v2.position.z;
-					
+						const float interpolate = 
+						    w0 * (1 / v0.position.z) +
+						    w1 * (1 / v1.position.z) +
+						    w2 * (1 / v2.position.z);
+						
+						float depth = 1.0f / interpolate;
+
 						//if (depth < 0.0f) continue;
 
 						if (depth < m_DepthBuffer[pixelIndex]) {
 							m_DepthBuffer[pixelIndex] = depth;
 
-							const Vector2 uv =	(w0 * v0.uv) +
-												(w1 * v1.uv) +
-												(w2 * v2.uv);
+							const Vector2 uv = (
+								((v0.uv / v0.position.z) * w0) +
+								((v1.uv / v1.position.z) * w1) +
+								((v2.uv / v2.position.z) * w2))
+								* depth;
 
 							ColorRGB finalColor = m_pTexture->Sample(uv);
-
-							//ColorRGB finalColor =	(w0 * v0.color) +
-							//						(w1 * v1.color) +
-							//						(w2 * v2.color);
 						
 							UpdateColor(pixelIndex, finalColor);
 						}
