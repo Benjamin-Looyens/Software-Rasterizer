@@ -115,9 +115,12 @@ void Renderer::Render()
 				const int pixelIndex = px + (py * m_Width);
 
 				if (m_RenderBounds) {
-					ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
-					UpdateColor(pixelIndex, finalColor);
-					continue;
+					if ((px == static_cast<int>(min.x) || py == static_cast<int>(min.y)) || 
+						(px == static_cast<int>(max.x) - 1 || py == static_cast<int>(max.y) - 1)) {
+						ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
+						UpdateColor(pixelIndex, finalColor);
+						continue;
+					}
 				}
 
 				const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
