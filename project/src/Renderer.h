@@ -35,7 +35,7 @@ namespace dae
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 
 	private:
-		void UpdateColor(const int& index, ColorRGB& col);
+		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
 
 		SDL_Window* m_pWindow{};
 

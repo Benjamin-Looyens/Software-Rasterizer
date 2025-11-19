@@ -64,7 +64,7 @@ void Renderer::Render()
 	};
 	
 	// Convert to Screen Space
-	std::vector<Vertex> verticesScreen;
+	std::vector<Vertex> verticesScreen; // Could just init with verticesWorld.size()
 	VertexTransformationFunction(verticesWorld, verticesScreen);
 
 	const size_t maxTri{ verticesScreen.size() / 3 };
@@ -119,19 +119,9 @@ void Renderer::Render()
 					//const float magnitude = Vector3::Cross(eV0, v2.position - v0.position).z;
 					const float magnitude = in0 + in1 + in2;
 
-					const float w0 = in0 / magnitude;
-					const float w1 = in1 / magnitude;
-					const float w2 = in2 / magnitude;
-					
-					//const float inv0 = 1 / v0.position.z;
-					//const float inv1 = 1 / v1.position.z;
-					//const float inv2 = 1 / v2.position.z;
-					//
-					//const float depth = 1 / (
-					//	w0 * inv0 +
-					//	w1 * inv1 +
-					//	w2 * inv2
-					//);
+					const float w0 = in1 / magnitude; // For some reason shifting the inside checks over by 1 vertex fixed my clipping issue ????
+					const float w1 = in2 / magnitude; 
+					const float w2 = in0 / magnitude; 
 
 					const float depth = 
 						w0 * v0.position.z +
@@ -166,19 +156,20 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 	vertices_out.resize(vertices_in.size());
 	
 	const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
-	
+
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
 			const Vector3 view = m_Camera.viewMatrix.TransformPoint(vert.position);
 			
-			const Vector3 ndc = {	view.x / (view.z * aspectRatio * m_Camera.fov),
+			const Vector3 clip = {	view.x / (view.z * aspectRatio * m_Camera.fov),
 									view.y / (view.z * m_Camera.fov),
-									vert.position.z }; // Is this correct ???
-	
+									view.z
+			}; 
+
 			return Vertex{ Vector3{
-				((ndc.x + 1.0f) / 2.0f) * m_Width,
-				((1.0f - ndc.y) / 2.0f) * m_Height,
-				ndc.z
+				((clip.x + 1.0f) / 2.0f) * m_Width,
+				((1.0f - clip.y) / 2.0f) * m_Height,
+				clip.z
 			}, 
 				vert.color
 			};

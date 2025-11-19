@@ -47,18 +47,11 @@ namespace dae
 
 		void CalculateViewMatrix()
 		{
-			//TODO W1
-			//ONB => invViewMatrix
-			//Inverse(ONB) => ViewMatrix
-
 			if (viewDirty) {
 				invViewMatrix = CalculateCameraToWorld();
 				viewMatrix = Matrix::Inverse(invViewMatrix);
 				viewDirty = false;
 			}
-
-			//ViewMatrix => Matrix::CreateLookAtLH(...) [not implemented yet]
-			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
 		}
 
 		void CalculateProjectionMatrix()
