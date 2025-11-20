@@ -141,24 +141,18 @@ void Renderer::Render()
 
 			constexpr float TRIANGLE_BOUNDS_OFFSET = 0.5f; // NOTE : Possibly check if needs to be bigger
 
-			const Vector2 min{
-				std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  - TRIANGLE_BOUNDS_OFFSET,
-				std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) - TRIANGLE_BOUNDS_OFFSET
-			};
-			const Vector2 max{
-				std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  + TRIANGLE_BOUNDS_OFFSET,
-				std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) + TRIANGLE_BOUNDS_OFFSET
-			};
+			const uint32_t minX = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  - TRIANGLE_BOUNDS_OFFSET);
+			const uint32_t minY = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) - TRIANGLE_BOUNDS_OFFSET);
+			const uint32_t maxX = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  + TRIANGLE_BOUNDS_OFFSET);
+			const uint32_t maxY = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) + TRIANGLE_BOUNDS_OFFSET);
 
-			// TODO : Change to uint, there's no need for these to be int
-			// HACK : I think having [px < static_cast<int>(max.x)] might cause it to cast for int every loop (which is icky)
-			for (int px{ static_cast<int>(min.x) }; px < static_cast<int>(max.x); ++px) {
-				for (int py{ static_cast<int>(min.y) }; py < static_cast<int>(max.y); ++py) {
+			for (uint32_t px{ minX }; px < maxX; ++px) {
+				for (uint32_t py{ minY }; py < maxY; ++py) {
 					const int pixelIndex = px + (py * m_Width);
 
 					if (m_RenderBounds) {
-						if ((px == static_cast<int>(min.x) || py == static_cast<int>(min.y)) || 
-							(px == static_cast<int>(max.x) - 1 || py == static_cast<int>(max.y) - 1)) {
+						if ((px == minX || py == minY) || 
+							(px == maxX - 1 || py == maxY - 1)) {
 							ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
 							UpdateColor(pixelIndex, finalColor);
 							continue;
