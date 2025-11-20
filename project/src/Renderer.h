@@ -47,7 +47,7 @@ namespace dae
 		// TEMP Texture
 		Texture* m_pTexture{ nullptr };
 
-		std::vector<float> m_DepthBuffer{}; // HACK : For later use, prob change this to a raw array
+		float* m_pDepthBuffer{};
 
 		Camera m_Camera{};
 

@@ -24,9 +24,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pFrontBuffer = SDL_GetWindowSurface(pWindow);
 	m_pBackBuffer = SDL_CreateRGBSurface(0, m_Width, m_Height, 32, 0, 0, 0, 0);
 	m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
-
-	//m_pDepthBufferPixels = new float[m_Width * m_Height];
-	m_DepthBuffer.resize(m_Width * m_Height);
+	m_pDepthBuffer = new float[m_Width * m_Height];
 
 	// Load texture (TEMP)
 	m_pTexture = Texture::LoadFromFile("resources/uv_grid_2.png");
@@ -37,6 +35,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 Renderer::~Renderer()
 {
+	delete[] m_pDepthBuffer;
 	delete m_pTexture;
 }
 
@@ -55,7 +54,7 @@ void Renderer::Render()
 	SDL_LockSurface(m_pBackBuffer);
 
 	// Reset Depth buffer
-	std::fill(begin(m_DepthBuffer), end(m_DepthBuffer), std::numeric_limits<float>::max());
+	std::fill_n(m_pDepthBuffer, m_Width * m_Height, std::numeric_limits<float>::max());
 
 	// Temporary test mesh
 	std::vector<Mesh> meshes{
@@ -187,8 +186,8 @@ void Renderer::Render()
 
 						//if (depth < 0.0f) continue;
 
-						if (depth < m_DepthBuffer[pixelIndex]) {
-							m_DepthBuffer[pixelIndex] = depth;
+						if (depth < m_pDepthBuffer[pixelIndex]) {
+							m_pDepthBuffer[pixelIndex] = depth;
 
 							const Vector2 uv = (
 								((v0.uv / v0.position.z) * w0) +
