@@ -48,7 +48,7 @@ void Renderer::Render()
 {
 	//@START
 	// Clear BackBuffer
-	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 50, 50, 50));
+	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 0, 0, 0));
 
 	// Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
@@ -206,7 +206,10 @@ void Renderer::Render()
 							
 							// Ensure no out of bounds operations while sampling
 							if ((uv.x <= 1.0f && uv.x >= 0.0f) && (uv.y <= 1.0f && uv.y >= 0.0f)) {
-								ColorRGB finalColor = m_pTexture->Sample(uv);
+								ColorRGB finalColor;
+								
+								if (m_RenderDepth) finalColor = ColorRGB::Lerp(colors::White, { 0.1f }, zDepth); // Is this what the slides asked?
+								else finalColor = m_pTexture->Sample(uv);
 						
 								UpdateColor(pixelIndex, finalColor);
 							}
