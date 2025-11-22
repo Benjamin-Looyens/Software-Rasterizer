@@ -53,6 +53,24 @@ namespace dae
 			aspectRatio = static_cast<float>(_width) / static_cast<float>(_height);
 		}
 
+		void SetOrigin(const Vector3& newPos) {
+			origin = newPos;
+			viewDirty = true;
+		}
+
+		void ResetOrientation()
+		{
+			forward = Vector3::UnitZ;
+			up = Vector3::UnitY;
+			right = Vector3::UnitX;
+
+			totalYaw = 0.0f;
+			totalPitch = 0.0f;
+
+			viewDirty = true;
+			projectDirty = true;
+		}
+
 		void CalculateViewMatrix()
 		{
 			if (viewDirty) {
@@ -99,6 +117,7 @@ namespace dae
 
 			bool movDirty{};
 			bool rotDirty{};
+			float sprintModifier{ 1.0f };
 
 			// Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
@@ -108,8 +127,9 @@ namespace dae
 			if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT]) { movement += right; movDirty = true; }
 			if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT]) { movement -= right; movDirty = true; }
 
-			if (pKeyboardState[SDL_SCANCODE_SPACE]) { movement += Vector3::UnitY; movDirty = true; }
-			if (pKeyboardState[SDL_SCANCODE_LSHIFT]) { movement -= Vector3::UnitY; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_SPACE] || pKeyboardState[SDL_SCANCODE_E]) { movement += Vector3::UnitY; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT] || pKeyboardState[SDL_SCANCODE_Q]) { movement -= Vector3::UnitY; movDirty = true; }
+			if (pKeyboardState[SDL_SCANCODE_LCTRL]) sprintModifier = 2.0f;
 
 			// Mouse Input
 			int mouseX{}, mouseY{};
@@ -137,7 +157,7 @@ namespace dae
 			}
 
 			if (movDirty && movement.Normalize() > 0.0f) { // NOTE : Ideally, the mouse movement shouldn't be normalized but making a bool just for that seems messy
-				origin += movement * movSpeed * deltaTime;
+				origin += movement * movSpeed * deltaTime * sprintModifier;
 				viewDirty = true;
 			}
 			if (rotDirty && rotation.Magnitude() > 0.0f) { // NOTE : In theory I could do SqrMagnitude?
