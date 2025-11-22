@@ -30,7 +30,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pTexture = Texture::LoadFromFile("resources/uv_grid_2.png");
 
 	//Initialize Camera
-	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
+	m_Camera.Initialize(m_Width, m_Height, 60.f, { .0f,.0f,-10.f });
 }
 
 Renderer::~Renderer()
@@ -179,23 +179,30 @@ void Renderer::Render()
 						const float w1 = in2 / magnitude; 
 						const float w2 = in0 / magnitude; 
 
-						const float interpolate = 
+						const float zInterpolate = 
 						    w0 * (1 / v0.position.z) +
 						    w1 * (1 / v1.position.z) +
 						    w2 * (1 / v2.position.z);
 						
-						float depth = 1.0f / interpolate;
+						const float zDepth = 1.0f / zInterpolate;
 
-						//if (depth < 0.0f) continue;
+						if (zDepth <= 0.0f || zDepth >= 1.0f) continue; // Frustum culled, pixel is not within near & far planes
+						if (zDepth < m_pDepthBuffer[pixelIndex]) {
+							m_pDepthBuffer[pixelIndex] = zDepth;
 
-						if (depth < m_pDepthBuffer[pixelIndex]) {
-							m_pDepthBuffer[pixelIndex] = depth;
+							const float wInterpolate = 
+								w0 * (1 / v0.position.w) +
+								w1 * (1 / v1.position.w) +
+								w2 * (1 / v2.position.w);
 
+							const float wDepth = 1 / wInterpolate;
+
+							// TODO : Implement compatibilty & choice between [UV + texture] or [vertex colors]
 							const Vector2 uv = (
-								((v0.uv / v0.position.z) * w0) +
-								((v1.uv / v1.position.z) * w1) +
-								((v2.uv / v2.position.z) * w2))
-								* depth;
+								((v0.uv / v0.position.w) * w0) +
+								((v1.uv / v1.position.w) * w1) +
+								((v2.uv / v2.position.w) * w2))
+								* wDepth;
 
 							ColorRGB finalColor = m_pTexture->Sample(uv);
 						
@@ -218,10 +225,12 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 {
 	vertices_out.resize(vertices_in.size());
 	
-	const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
+	const float& aspectRatio = m_Camera.aspectRatio;
 
 	// WorldViewProjectionMatrix = WorldMatrix * ViewMatrix * ProjectionMatrix
 	// NOTE : WorldMatrix ??
+
+	const Matrix worldViewProjectionMatrix = /*worldMatrix **/ m_Camera.viewMatrix * m_Camera.projectMatrix;
 
 	// Perspective divide should use w instead of z now
 	//		data now stored as:
@@ -232,18 +241,19 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
-			const Vector3 view = m_Camera.viewMatrix.TransformPoint(vert.position);
+			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.position, 1.0f });
 			
-			const Vector3 clip = {	view.x / (view.z * aspectRatio * m_Camera.fov),
-									view.y / (view.z * m_Camera.fov),
-									view.z
+			const Vector4 clip = {	view.x / view.w,
+									view.y / view.w,
+									view.z / view.w,
+									view.w
 			}; 
 
 			return Vertex_Out{ Vector4{
 				((clip.x + 1.0f) / 2.0f) * m_Width,
 				((1.0f - clip.y) / 2.0f) * m_Height,
 				clip.z,
-				1.0f
+				clip.w
 			}, 
 				vert.color, vert.uv
 			};
