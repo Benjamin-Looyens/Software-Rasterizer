@@ -37,7 +37,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
 
 	//Initialize Camera
-	m_Camera.Initialize(m_Width, m_Height, 60.f, { .0f,.0f,-10.f });
+	m_Camera.Initialize(m_Width, m_Height, 60.f, { 0.0f, 5.0f, -30.0f });
 	m_Camera.nearPlane = 2.0f; // ???
 }
 
@@ -50,6 +50,9 @@ Renderer::~Renderer()
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
+
+	m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
+	m_WorldMatrix = Matrix::CreateRotationY(m_RotCounter);
 }
 
 void Renderer::Render()
@@ -196,8 +199,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 	
 	const float& aspectRatio = m_Camera.aspectRatio;
 
-	// NOTE : WorldMatrix ??
-	const Matrix worldViewProjectionMatrix = /*worldMatrix **/ m_Camera.viewMatrix * m_Camera.projectMatrix;
+	const Matrix worldViewProjectionMatrix = m_WorldMatrix * m_Camera.viewMatrix * m_Camera.projectMatrix;
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {

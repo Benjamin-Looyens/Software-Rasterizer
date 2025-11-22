@@ -45,7 +45,9 @@ namespace dae
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
 		
-		// Meshes
+		float m_RotCounter{};
+		Matrix m_WorldMatrix{};
+
 		std::vector<Mesh> m_Meshes;
 		
 		// TEMP Texture
