@@ -20,6 +20,8 @@ namespace dae
 		float fovAngle{90.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
 
+		float aspectRatio{  }; // TODO : Implement way to calculate aspectRatio within camera struct
+
 		float movSpeed{ 10.0f };
 		float rotSpeed{ 0.6f };
 
@@ -36,6 +38,9 @@ namespace dae
 
 		Matrix projectMatrix{};
 		bool projectDirty = true;
+
+		float nearPlane{ 1.0f };
+		float farPlane{ 1000.0f };
 
 		void Initialize(float _fovAngle = 90.f, Vector3 _origin = {0.f,0.f,0.f})
 		{

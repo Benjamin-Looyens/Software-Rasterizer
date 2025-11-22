@@ -76,6 +76,8 @@ int main(int argc, char* args[])
 					takeScreenshot = true;
 				if (e.key.keysym.scancode == SDL_SCANCODE_B)
 					pRenderer->ToggleBoundsRender();
+				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+					pRenderer->ToggleDepthRender();
 				break;
 			}
 		}

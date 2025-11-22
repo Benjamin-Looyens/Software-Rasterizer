@@ -34,6 +34,7 @@ namespace dae
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
+		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
 
 	private:
 		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
@@ -55,5 +56,6 @@ namespace dae
 		int m_Height{};
 
 		bool m_RenderBounds{ false };
+		bool m_RenderDepth{ false };
 	};
 }

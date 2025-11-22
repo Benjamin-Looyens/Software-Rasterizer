@@ -44,7 +44,7 @@ namespace dae
 		Uint8 G;
 		Uint8 B;
 
-		SDL_GetRGB(m_pSurfacePixels[x + (y * width)], m_pSurface->format, &R, &G, &B);
+		SDL_GetRGB(m_pSurfacePixels[x + (y * width)], m_pSurface->format, &R, &G, &B); // Can crash here due to out of bounds access
 
 		retColor.r = static_cast<float>(R) / 255.0f;
 		retColor.g = static_cast<float>(G) / 255.0f;

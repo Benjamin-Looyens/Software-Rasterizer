@@ -102,7 +102,9 @@ void Renderer::Render()
 	};
 
 	// Convert to Screen Space
-	VertexTransformationFunction(meshes[0].vertices, meshes[0].vertices_out);
+	for (Mesh& mesh : meshes) {
+		VertexTransformationFunction(mesh.vertices, mesh.vertices_out); // TODO : potentially apply the dirty pattern
+	}
 
 	//RENDER LOGIC
 	for (const Mesh& mesh : meshes) {
@@ -217,6 +219,16 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 	vertices_out.resize(vertices_in.size());
 	
 	const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
+
+	// WorldViewProjectionMatrix = WorldMatrix * ViewMatrix * ProjectionMatrix
+	// NOTE : WorldMatrix ??
+
+	// Perspective divide should use w instead of z now
+	//		data now stored as:
+	//			vx in range [-1, 1]
+	//			vy in range [-1, 1]
+	//			vz in range [0, 1]		(!NOT LINEAR, even with 1/vz)
+	//			vw = vz in view space	(!LINEAR with 1/wz)
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
