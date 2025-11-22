@@ -35,6 +35,7 @@ namespace dae
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
+		void ResetCamera();
 
 	private:
 		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
@@ -62,5 +63,7 @@ namespace dae
 
 		bool m_RenderBounds{ false };
 		bool m_RenderDepth{ false };
+
+		const Vector3 m_CameraStartPos{ 0.0f, 5.0f, -30.0f };
 	};
 }

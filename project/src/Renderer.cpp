@@ -37,7 +37,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
 
 	//Initialize Camera
-	m_Camera.Initialize(m_Width, m_Height, 60.f, { 0.0f, 5.0f, -30.0f });
+	m_Camera.Initialize(m_Width, m_Height, 60.f, m_CameraStartPos);
 	m_Camera.nearPlane = 2.0f; // ???
 }
 
@@ -221,6 +221,12 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 			};
 		}
 	);
+}
+
+void dae::Renderer::ResetCamera()
+{
+	m_Camera.SetOrigin(m_CameraStartPos);
+	m_Camera.ResetOrientation();
 }
 
 void dae::Renderer::UpdateColor(const int& index, ColorRGB& col)
