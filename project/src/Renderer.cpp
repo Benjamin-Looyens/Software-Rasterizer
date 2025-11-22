@@ -111,8 +111,8 @@ void Renderer::Render()
 		const auto& indices = mesh.indices;
 		const auto& vertices = mesh.vertices_out;
 
-		int loopAdd;
-		int sizeCheck;
+		int loopAdd{};
+		int sizeCheck{};
 		switch (mesh.primitiveTopology) {
 		case PrimitiveTopology::TriangleList:
 			loopAdd = 3;
@@ -140,12 +140,12 @@ void Renderer::Render()
 			const Vector3 eV1 = v2.position - v1.position;
 			const Vector3 eV2 = v0.position - v2.position;
 
-			constexpr float TRIANGLE_BOUNDS_OFFSET = 0.5f; // NOTE : Possibly check if needs to be bigger
+			constexpr float TRIANGLE_BOUNDS_OFFSET = 1.5f; // NOTE : Possibly check if needs to be bigger
 
-			const uint32_t minX = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  - TRIANGLE_BOUNDS_OFFSET);
-			const uint32_t minY = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) - TRIANGLE_BOUNDS_OFFSET);
-			const uint32_t maxX = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x), 0.0f, static_cast<float>(m_Width))  + TRIANGLE_BOUNDS_OFFSET);
-			const uint32_t maxY = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y), 0.0f, static_cast<float>(m_Height)) + TRIANGLE_BOUNDS_OFFSET);
+			const uint32_t minX = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
+			const uint32_t minY = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
+			const uint32_t maxX = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
+			const uint32_t maxY = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
 
 			for (uint32_t px{ minX }; px < maxX; ++px) {
 				for (uint32_t py{ minY }; py < maxY; ++py) {
