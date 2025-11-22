@@ -5,6 +5,12 @@ namespace dae
 {
 	struct ColorRGB final
 	{
+		ColorRGB() = default;
+		ColorRGB(float _r, float _g, float _b) : r{ _r }, g{ _g }, b{ _b }
+		{};
+		ColorRGB(float _universal) : r{ _universal }, g{ _universal }, b{ _universal }
+		{};
+
 		float r{};
 		float g{};
 		float b{};
