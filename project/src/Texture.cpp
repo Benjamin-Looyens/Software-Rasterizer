@@ -32,10 +32,8 @@ namespace dae
 
 	ColorRGB Texture::Sample(const Vector2& uv) const
 	{
-		ColorRGB retColor;
-
-		const int& width =m_pSurface->w;
-		const int& height =m_pSurface->h;
+		const int& width = m_pSurface->w;
+		const int& height = m_pSurface->h;
 
 		const int x = static_cast<int>(static_cast<float>(width) * uv.x);
 		const int y = static_cast<int>(static_cast<float>(height) * uv.y);
@@ -46,10 +44,10 @@ namespace dae
 
 		SDL_GetRGB(m_pSurfacePixels[x + (y * width)], m_pSurface->format, &R, &G, &B); // Can crash here due to out of bounds access
 
-		retColor.r = static_cast<float>(R) / 255.0f;
-		retColor.g = static_cast<float>(G) / 255.0f;
-		retColor.b = static_cast<float>(B) / 255.0f;
-
-		return retColor;
+		return {
+			static_cast<float>(R) / 255.0f,
+			static_cast<float>(G) / 255.0f,
+			static_cast<float>(B) / 255.0f
+		};
 	}
 }

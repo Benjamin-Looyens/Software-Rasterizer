@@ -203,10 +203,13 @@ void Renderer::Render()
 								((v1.uv / v1.position.w) * w1) +
 								((v2.uv / v2.position.w) * w2))
 								* wDepth;
-
-							ColorRGB finalColor = m_pTexture->Sample(uv);
+							
+							// Ensure no out of bounds operations while sampling
+							if ((uv.x <= 1.0f && uv.x >= 0.0f) && (uv.y <= 1.0f && uv.y >= 0.0f)) {
+								ColorRGB finalColor = m_pTexture->Sample(uv);
 						
-							UpdateColor(pixelIndex, finalColor);
+								UpdateColor(pixelIndex, finalColor);
+							}
 						}
 					}
 				}
@@ -227,17 +230,8 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 	
 	const float& aspectRatio = m_Camera.aspectRatio;
 
-	// WorldViewProjectionMatrix = WorldMatrix * ViewMatrix * ProjectionMatrix
 	// NOTE : WorldMatrix ??
-
 	const Matrix worldViewProjectionMatrix = /*worldMatrix **/ m_Camera.viewMatrix * m_Camera.projectMatrix;
-
-	// Perspective divide should use w instead of z now
-	//		data now stored as:
-	//			vx in range [-1, 1]
-	//			vy in range [-1, 1]
-	//			vz in range [0, 1]		(!NOT LINEAR, even with 1/vz)
-	//			vw = vz in view space	(!LINEAR with 1/wz)
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
