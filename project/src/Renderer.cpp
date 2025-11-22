@@ -27,10 +27,18 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pDepthBuffer = new float[m_Width * m_Height];
 
 	// Load texture (TEMP)
-	m_pTexture = Texture::LoadFromFile("resources/uv_grid_2.png");
+	m_pTexture = Texture::LoadFromFile("resources/tuktuk.png");
+
+	// Initialize Meshes
+	m_Meshes.push_back({});
+	if (!Utils::ParseOBJ("resources/tuktuk.obj", m_Meshes[0].vertices, m_Meshes[0].indices)) {
+		assert(false && "Mesh Could not be Initialized!");
+	}
+	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 60.f, { .0f,.0f,-10.f });
+	m_Camera.nearPlane = 2.0f; // ???
 }
 
 Renderer::~Renderer()
@@ -56,58 +64,13 @@ void Renderer::Render()
 	// Reset Depth buffer
 	std::fill_n(m_pDepthBuffer, m_Width * m_Height, std::numeric_limits<float>::max());
 
-	// Temporary test mesh
-	std::vector<Mesh> meshes{
-		{
-			// Vertices
-			{
-				{ { -3.0f,  3.0f, -2.0f }, colors::White, { 0.0f, 0.0f } },	// 0
-				{ {  0.0f,  3.0f, -2.0f }, colors::White, { 0.5f, 0.0f } },	// 1
-				{ {  3.0f,  3.0f, -2.0f }, colors::White, { 1.0f, 0.0f } },	// 2
-				{ { -3.0f,  0.0f, -2.0f }, colors::White, { 0.0f, 0.5f } },	// 3
-				{ {  0.0f,  0.0f, -2.0f }, colors::White, { 0.5f, 0.5f } },	// 4
-				{ {  3.0f,  0.0f, -2.0f }, colors::White, { 1.0f, 0.5f } },	// 5
-				{ { -3.0f, -3.0f, -2.0f }, colors::White, { 0.0f, 1.0f } },	// 6
-				{ {  0.0f, -3.0f, -2.0f }, colors::White, { 0.5f, 1.0f } },	// 7
-				{ {  3.0f, -3.0f, -2.0f }, colors::White, { 1.0f, 1.0f } },	// 8
-			},
-
-			// Indices (List)
-			{
-				3, 0, 4,
-				0, 1, 4,
-				4, 1, 5,
-				1, 2, 5,
-				6, 3, 7,
-				3, 4, 7,
-				7, 4, 8,
-				4, 5, 8,
-			},
-			
-			PrimitiveTopology::TriangleList
-			
-			//// Indices (Strip)
-			//{
-			//	3, 0, 4,
-			//	1, 5, 2,
-			//
-			//	2, 6,
-			//
-			//	6, 3, 7,
-			//	4, 8, 5,
-			//},
-			//
-			//PrimitiveTopology::TriangleStrip
-		}
-	};
-
 	// Convert to Screen Space
-	for (Mesh& mesh : meshes) {
+	for (Mesh& mesh : m_Meshes) {
 		VertexTransformationFunction(mesh.vertices, mesh.vertices_out); // TODO : potentially apply the dirty pattern
 	}
 
 	//RENDER LOGIC
-	for (const Mesh& mesh : meshes) {
+	for (const Mesh& mesh : m_Meshes) {
 		const auto& indices = mesh.indices;
 		const auto& vertices = mesh.vertices_out;
 
