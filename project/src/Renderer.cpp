@@ -101,6 +101,13 @@ void Renderer::Render()
 			const Vertex_Out& v0 = vertices[i0];
 			const Vertex_Out& v1 = vertices[i1];
 			const Vertex_Out& v2 = vertices[i2];
+			
+			// TODO : Collapse a lot of checks to functions
+
+			// Frustum Culling Z
+			if (v0.position.z <= 0.0f || v0.position.z >= 1.0f) continue;
+			if (v1.position.z <= 0.0f || v1.position.z >= 1.0f) continue;
+			if (v2.position.z <= 0.0f || v2.position.z >= 1.0f) continue;
 
 			const Vector3 eV0 = v1.position - v0.position;
 			const Vector3 eV1 = v2.position - v1.position;
@@ -152,7 +159,6 @@ void Renderer::Render()
 						
 						const float zDepth = 1.0f / zInterpolate;
 
-						if (zDepth <= 0.0f || zDepth >= 1.0f) continue; // Frustum culled, pixel is not within near & far planes
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
 
@@ -211,6 +217,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 									view.w
 			}; 
 
+			// TODO : Store within NDC (X & Y between [-1, 1])
 			return Vertex_Out{ Vector4{
 				((clip.x + 1.0f) / 2.0f) * m_Width,
 				((1.0f - clip.y) / 2.0f) * m_Height,
