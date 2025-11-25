@@ -212,10 +212,13 @@ void Renderer::Render()
 
 								// Normal
 								((v0.normal * w0) +
-								(v1.normal * w1) +
-								(v2.normal * w2)).Normalized(),
+								(v1.normal  * w1) +
+								(v2.normal  * w2)).Normalized(),
 
 								// Tangent
+								((v0.tangent * w0) +
+								(v1.tangent  * w1) +
+								(v2.tangent  * w2)).Normalized()
 
 								// ViewDirection
 							};
@@ -223,7 +226,7 @@ void Renderer::Render()
 							constexpr float LIGHT_VALUE = 0.577f;
 
 							ColorRGB finalColor;
-							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, finalColor)) {
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, m_UseNormalMap, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
 						}
@@ -270,9 +273,10 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 
 void dae::Renderer::CycleLightingMode()
 {
-	// TODO : Implement a smooth way to print out the fact lighting mode changed
-	m_CurMode = static_cast<LightingMode>((static_cast<uint8_t>(m_CurMode) + 1) % static_cast<uint8_t>(LightingMode::ModeAmount)); // Yuck
+	// Yuck
+	m_CurMode = static_cast<LightingMode>((static_cast<uint8_t>(m_CurMode) + 1) % static_cast<uint8_t>(LightingMode::ModeAmount)); 
 
+	// Yuck part 2
 	std::cout << "Switched rendering mode to: ";
 	switch (m_CurMode)
 	{

@@ -36,6 +36,7 @@ namespace dae
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
 		void ToggleRotation() { m_DoRotation = !m_DoRotation; }
+		void ToggleNormalMap() { m_UseNormalMap = !m_UseNormalMap; }
 
 		void CycleLightingMode();
 
@@ -79,6 +80,8 @@ namespace dae
 		bool m_RenderDepth{ false };
 		
 		bool m_DoRotation{ false };
+
+		bool m_UseNormalMap{ true };
 
 		const Vector3 m_CameraStartPos{ 0.0f, 0.0f, -50.0f }; // TODO : Change to be 0.0f in the Z, and have the mesh be at 50.0f at Z
 	};

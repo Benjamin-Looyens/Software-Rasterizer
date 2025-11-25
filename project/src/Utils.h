@@ -42,7 +42,7 @@ namespace dae
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT
-		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, ColorRGB& color_OUT)
+		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
 		{
 			// Shininess = 25.0f
 			// Ambient = { 0.25f, 0.25f, 0.25f }
@@ -51,7 +51,16 @@ namespace dae
 			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
 				constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
 
-				const float observedArea = std::max(0.0f, Vector3::Dot(vert.normal, -lightDir.Normalized()));
+				const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
+				const Matrix tangentSpace = { vert.tangent, binormal, vert.normal, Vector3::Zero };
+
+				Vector3 normalMapSample = { meshTexture.pNormal->Sample(vert.uv) };
+				normalMapSample = 2.0f * normalMapSample - Vector3{ 1.0f, 1.0f, 1.0f };
+				normalMapSample = tangentSpace.TransformVector(normalMapSample).Normalized();
+
+				const Vector3& normal = useNormalMap ? normalMapSample : vert.normal;
+
+				const float observedArea = std::max(0.0f, Vector3::Dot(normal, -lightDir.Normalized())); // DO I need to normalize the lightDir?
 
 				switch (mode)
 				{
@@ -60,13 +69,13 @@ namespace dae
 					break;
 					case Renderer::LightingMode::Diffuse:
 					{
-						constexpr float kd = 1.0f; // TODO : Check if this is something else?
+						constexpr float kd = 1.0f;
 						const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
 						const ColorRGB lambert = ((kd / PI) * diffuse);
 
 						color_OUT = lightIntensity *
-							lambert *
-							observedArea;
+									lambert *
+									observedArea;
 						break;
 					}
 					case Renderer::LightingMode::Specular:
