@@ -136,8 +136,7 @@ void Renderer::Render()
 						}
 					}
 
-					const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
-					const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
+					const Vector3 pixel3{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f, 0.0f };
 
 					const Vector3 cV0 = pixel3 - v0Pos;
 					const float in0 = Vector3::CrossZ(eV0, cV0);
@@ -155,22 +154,17 @@ void Renderer::Render()
 						const float w1 = in2 / magnitude; 
 						const float w2 = in0 / magnitude; 
 
-						const float zInterpolate = 
-						    w0 * (1 / v0Pos.z) +
-						    w1 * (1 / v1Pos.z) +
-						    w2 * (1 / v2Pos.z);
-						
-						const float zDepth = 1.0f / zInterpolate;
+						const float zDepth = 1.0f / (
+							w0 * (1 / v0Pos.z) +
+							w1 * (1 / v1Pos.z) +
+							w2 * (1 / v2Pos.z));
 
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
-
-							const float wInterpolate = 
+							const float wDepth = 1 / (
 								w0 * (1 / v0Pos.w) +
 								w1 * (1 / v1Pos.w) +
-								w2 * (1 / v2Pos.w);
-
-							const float wDepth = 1 / wInterpolate;
+								w2 * (1 / v2Pos.w));
 
 							// TODO : Implement compatibilty & choice between [UV + texture] or [vertex colors]
 							const Vector2 uv = (
