@@ -67,7 +67,7 @@ void Renderer::Render()
 	// Reset Depth buffer
 	std::fill_n(m_pDepthBuffer, m_Width * m_Height, std::numeric_limits<float>::max());
 
-	// Convert to Screen Space
+	// Convert to NDC
 	for (Mesh& mesh : m_Meshes) {
 		VertexTransformationFunction(mesh.vertices, mesh.vertices_out); // TODO : potentially apply the dirty pattern
 	}
@@ -109,16 +109,30 @@ void Renderer::Render()
 			if (v1.position.z <= 0.0f || v1.position.z >= 1.0f) continue;
 			if (v2.position.z <= 0.0f || v2.position.z >= 1.0f) continue;
 
-			const Vector3 eV0 = v1.position - v0.position;
-			const Vector3 eV1 = v2.position - v1.position;
-			const Vector3 eV2 = v0.position - v2.position;
+			// Frustum culling X
+			if (v0.position.x <= -1.0f || v0.position.x >= 1.0f) continue;
+			if (v1.position.x <= -1.0f || v1.position.x >= 1.0f) continue;
+			if (v2.position.x <= -1.0f || v2.position.x >= 1.0f) continue;
+			
+			// Frustum culling Y
+			if (v0.position.y <= -1.0f || v0.position.y >= 1.0f) continue;
+			if (v1.position.y <= -1.0f || v1.position.y >= 1.0f) continue;
+			if (v2.position.y <= -1.0f || v2.position.y >= 1.0f) continue;
+
+			const Vector4 v0Pos = Utils::ApplyResolution(v0.position, m_Width, m_Height);
+			const Vector4 v1Pos = Utils::ApplyResolution(v1.position, m_Width, m_Height);
+			const Vector4 v2Pos = Utils::ApplyResolution(v2.position, m_Width, m_Height);
+
+			const Vector3 eV0 = v1Pos - v0Pos;
+			const Vector3 eV1 = v2Pos - v1Pos;
+			const Vector3 eV2 = v0Pos - v2Pos;
 
 			constexpr float TRIANGLE_BOUNDS_OFFSET = 1.5f; // NOTE : Possibly check if needs to be bigger
 
-			const uint32_t minX = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.x, v1.position.x), v2.position.x) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
-			const uint32_t minY = static_cast<uint32_t>(std::clamp(std::min(std::min(v0.position.y, v1.position.y), v2.position.y) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
-			const uint32_t maxX = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.x, v1.position.x), v2.position.x) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
-			const uint32_t maxY = static_cast<uint32_t>(std::clamp(std::max(std::max(v0.position.y, v1.position.y), v2.position.y) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
+			const uint32_t minX = static_cast<uint32_t>(std::clamp(std::min(std::min(v0Pos.x, v1Pos.x), v2Pos.x) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
+			const uint32_t minY = static_cast<uint32_t>(std::clamp(std::min(std::min(v0Pos.y, v1Pos.y), v2Pos.y) - TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
+			const uint32_t maxX = static_cast<uint32_t>(std::clamp(std::max(std::max(v0Pos.x, v1Pos.x), v2Pos.x) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Width)));
+			const uint32_t maxY = static_cast<uint32_t>(std::clamp(std::max(std::max(v0Pos.y, v1Pos.y), v2Pos.y) + TRIANGLE_BOUNDS_OFFSET, 0.0f, static_cast<float>(m_Height)));
 
 			for (uint32_t px{ minX }; px < maxX; ++px) {
 				for (uint32_t py{ minY }; py < maxY; ++py) {
@@ -136,13 +150,13 @@ void Renderer::Render()
 					const Vector2 pixel{ static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
 					const Vector3 pixel3{ pixel.x, pixel.y, 0.0f };
 
-					const Vector3 cV0 = pixel3 - v0.position;
+					const Vector3 cV0 = pixel3 - v0Pos;
 					const float in0 = Vector3::CrossZ(eV0, cV0);
 
-					const Vector3 cV1 = pixel3 - v1.position;
+					const Vector3 cV1 = pixel3 - v1Pos;
 					const float in1 = Vector3::CrossZ(eV1, cV1);
 
-					const Vector3 cV2 = pixel3 - v2.position;
+					const Vector3 cV2 = pixel3 - v2Pos;
 					const float in2 = Vector3::CrossZ(eV2, cV2);
 
 					if (in0 >= 0 && in1 >= 0 && in2 >= 0) {
@@ -153,9 +167,9 @@ void Renderer::Render()
 						const float w2 = in0 / magnitude; 
 
 						const float zInterpolate = 
-						    w0 * (1 / v0.position.z) +
-						    w1 * (1 / v1.position.z) +
-						    w2 * (1 / v2.position.z);
+						    w0 * (1 / v0Pos.z) +
+						    w1 * (1 / v1Pos.z) +
+						    w2 * (1 / v2Pos.z);
 						
 						const float zDepth = 1.0f / zInterpolate;
 
@@ -163,17 +177,17 @@ void Renderer::Render()
 							m_pDepthBuffer[pixelIndex] = zDepth;
 
 							const float wInterpolate = 
-								w0 * (1 / v0.position.w) +
-								w1 * (1 / v1.position.w) +
-								w2 * (1 / v2.position.w);
+								w0 * (1 / v0Pos.w) +
+								w1 * (1 / v1Pos.w) +
+								w2 * (1 / v2Pos.w);
 
 							const float wDepth = 1 / wInterpolate;
 
 							// TODO : Implement compatibilty & choice between [UV + texture] or [vertex colors]
 							const Vector2 uv = (
-								((v0.uv / v0.position.w) * w0) +
-								((v1.uv / v1.position.w) * w1) +
-								((v2.uv / v2.position.w) * w2))
+								((v0.uv / v0Pos.w) * w0) +
+								((v1.uv / v1Pos.w) * w1) +
+								((v2.uv / v2Pos.w) * w2))
 								* wDepth;
 							
 							// Ensure no out of bounds operations while sampling
@@ -217,15 +231,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 									view.w
 			}; 
 
-			// TODO : Store within NDC (X & Y between [-1, 1])
-			return Vertex_Out{ Vector4{
-				((clip.x + 1.0f) / 2.0f) * m_Width,
-				((1.0f - clip.y) / 2.0f) * m_Height,
-				clip.z,
-				clip.w
-			}, 
-				vert.color, vert.uv
-			};
+			return Vertex_Out{ clip, vert.color, vert.uv };
 		}
 	);
 }

@@ -9,6 +9,15 @@ namespace dae
 {
 	namespace Utils
 	{
+		// Apply Resolution onto NDC Coordinates
+		inline Vector4 ApplyResolution(const Vector4& ndc, const int width, const int height)
+		{
+			return { ((ndc.x + 1.0f) / 2.0f) * width,
+					 ((1.0f - ndc.y) / 2.0f) * height,
+					 ndc.z, ndc.w
+			};
+		}
+
 		//Just parses vertices and indices
 #pragma warning(push)
 #pragma warning(disable : 4505) //Warning unreferenced local function
