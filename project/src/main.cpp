@@ -82,6 +82,8 @@ int main(int argc, char* args[])
 					pRenderer->ToggleDepthRender();
 				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
 					pRenderer->ToggleRotation();
+				if (e.key.keysym.scancode == SDL_SCANCODE_F6)
+					pRenderer->CycleLightingMode();
 				break;
 			}
 		}

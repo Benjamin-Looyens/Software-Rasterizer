@@ -42,39 +42,41 @@ namespace dae
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT
-		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, bool renderDepth, const Vector3& lightDir, ColorRGB& color_OUT)
+		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, ColorRGB& color_OUT)
 		{
+			// Shininess = 25.0f
+			// Ambient = { 0.25f, 0.25f, 0.25f }
+
+			// TODO : Check if the uv check is needed anymore after frustum culling
 			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
-				// TODO : change renderDepth variable to an enum to switch between LightingModes
-				if (renderDepth) color_OUT = ColorRGB::Lerp(colors::White, { 0.1f }, vert.position.z); // Is this what the slides asked?
-				else {
-					// Lambert(diffuseReflectance, diffuseColor)
-					// static ColorRGB Lambert(float kd, const ColorRGB& cd) { return (kd / PI) * cd; }
-					
-					// cosine law:
-					// const float observedArea = Vector3::Dot(latestHit.normal, lightDir);
+				constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
 
-					// Lambert cosine law:
-					// Lambert * observedArea
+				const float observedArea = std::max(0.0f, Vector3::Dot(vert.normal, -lightDir.Normalized()));
 
-					// Shininess = 25.0f
-					// Ambient = { 0.25f, 0.25f, 0.25f }
+				switch (mode)
+				{
+					case Renderer::LightingMode::ObservedArea:
+						color_OUT = { observedArea };
+					break;
+					case Renderer::LightingMode::Diffuse:
+					{
+						constexpr float kd = 1.0f; // TODO : Check if this is something else?
+						const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
+						const ColorRGB lambert = ((kd / PI) * diffuse);
 
-					constexpr float lightIntensity = 7.0f;
-
-					constexpr float kd = 1.0f; // TODO : Check if this is something else?
-					const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
-					const ColorRGB lambert = ((kd / PI) * diffuse);
-
-					const float observedArea = std::max(0.0f, Vector3::Dot(vert.normal, -lightDir.Normalized()));
-
-					color_OUT = lightIntensity * 
-								lambert * 
-								observedArea;
-
-					//color_OUT = { observedArea };
+						color_OUT = lightIntensity *
+							lambert *
+							observedArea;
+						break;
+					}
+					case Renderer::LightingMode::Specular:
+						return false;
+					break;
+					case Renderer::LightingMode::Combined:
+						return false;
+					break;
 				}
-				
+
 				return true;
 			}
 

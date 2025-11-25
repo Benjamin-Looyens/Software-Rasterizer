@@ -223,7 +223,7 @@ void Renderer::Render()
 							constexpr float LIGHT_VALUE = 0.577f;
 
 							ColorRGB finalColor;
-							if (Utils::PixelShade(interpolated, mesh.textureData, m_RenderDepth, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, finalColor)) {
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
 						}
@@ -266,6 +266,29 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 			};
 		}
 	);
+}
+
+void dae::Renderer::CycleLightingMode()
+{
+	// TODO : Implement a smooth way to print out the fact lighting mode changed
+	m_CurMode = static_cast<LightingMode>((static_cast<uint8_t>(m_CurMode) + 1) % static_cast<uint8_t>(LightingMode::ModeAmount)); // Yuck
+
+	std::cout << "Switched rendering mode to: ";
+	switch (m_CurMode)
+	{
+	case Renderer::LightingMode::ObservedArea:
+		std::cout << "ObservedArea\n";
+		break;
+	case Renderer::LightingMode::Diffuse:
+		std::cout << "Diffuse\n";
+		break;
+	case Renderer::LightingMode::Specular:
+		std::cout << "Specular\n";
+		break;
+	case Renderer::LightingMode::Combined:
+		std::cout << "Combined\n";
+		break;
+	}
 }
 
 void dae::Renderer::ResetCamera()

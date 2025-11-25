@@ -35,12 +35,27 @@ namespace dae
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
-
 		void ToggleRotation() { m_DoRotation = !m_DoRotation; }
+
+		void CycleLightingMode();
+
 		void ResetCamera();
+
+		enum class LightingMode : uint8_t
+		{
+			ObservedArea,
+			Diffuse,
+			Specular,
+			Combined,
+
+			ModeAmount
+		}; 
+		// Does it need a depth render mode?
 
 	private:
 		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
+
+		LightingMode m_CurMode{ LightingMode::Diffuse };
 
 		SDL_Window* m_pWindow{};
 
