@@ -9,6 +9,27 @@ namespace dae
 {
 	namespace Utils
 	{
+		// Frustum Check for each Vertex
+		bool FrustumCheck(const Vector4& v0, const Vector4& v1, const Vector4& v2)
+		{
+			// Frustum Culling Z
+			if (v0.z <= 0.0f || v0.z >= 1.0f) return false;
+			if (v1.z <= 0.0f || v1.z >= 1.0f) return false;
+			if (v2.z <= 0.0f || v2.z >= 1.0f) return false;
+
+			// Frustum culling X
+			if (v0.x <= -1.0f || v0.x >= 1.0f) return false;
+			if (v1.x <= -1.0f || v1.x >= 1.0f) return false;
+			if (v2.x <= -1.0f || v2.x >= 1.0f) return false;
+
+			// Frustum culling Y
+			if (v0.y <= -1.0f || v0.y >= 1.0f) return false;
+			if (v1.y <= -1.0f || v1.y >= 1.0f) return false;
+			if (v2.y <= -1.0f || v2.y >= 1.0f) return false;
+
+			return true;
+		}
+
 		// Apply Resolution onto NDC Coordinates
 		inline Vector4 ApplyResolution(const Vector4& ndc, const int width, const int height)
 		{

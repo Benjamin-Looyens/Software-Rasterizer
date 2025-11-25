@@ -106,20 +106,7 @@ void Renderer::Render()
 			
 			// TODO : Collapse a lot of checks to functions
 
-			// Frustum Culling Z
-			if (v0.position.z <= 0.0f || v0.position.z >= 1.0f) continue;
-			if (v1.position.z <= 0.0f || v1.position.z >= 1.0f) continue;
-			if (v2.position.z <= 0.0f || v2.position.z >= 1.0f) continue;
-
-			// Frustum culling X
-			if (v0.position.x <= -1.0f || v0.position.x >= 1.0f) continue;
-			if (v1.position.x <= -1.0f || v1.position.x >= 1.0f) continue;
-			if (v2.position.x <= -1.0f || v2.position.x >= 1.0f) continue;
-			
-			// Frustum culling Y
-			if (v0.position.y <= -1.0f || v0.position.y >= 1.0f) continue;
-			if (v1.position.y <= -1.0f || v1.position.y >= 1.0f) continue;
-			if (v2.position.y <= -1.0f || v2.position.y >= 1.0f) continue;
+			if (!Utils::FrustumCheck(v0.position, v1.position, v2.position)) continue;
 
 			const Vector4 v0Pos = Utils::ApplyResolution(v0.position, m_Width, m_Height);
 			const Vector4 v1Pos = Utils::ApplyResolution(v1.position, m_Width, m_Height);
