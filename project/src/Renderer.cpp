@@ -177,21 +177,43 @@ void Renderer::Render()
 								w1 * (1 / v1Pos.w) +
 								w2 * (1 / v2Pos.w));
 
-							const Vector2 uv = (
-								((v0.uv / v0Pos.w) * w0) +
+							Vertex_Out interpolated{
+								// Position
+								{
+									1 / (
+										w0 * (1 / v0Pos.x) +
+										w1 * (1 / v1Pos.x) +
+										w2 * (1 / v2Pos.x)),
+									1 / (
+										w0 * (1 / v0Pos.y) +
+										w1 * (1 / v1Pos.y) +
+										w2 * (1 / v2Pos.y)),
+									zDepth,
+									wDepth
+								},
+
+								// Color
+								(((v0.color / v0Pos.w) * w0) +
+								((v1.color / v1Pos.w) * w1) +
+								((v2.color / v2Pos.w) * w2))
+								* wDepth,
+
+								// UV
+								(((v0.uv / v0Pos.w) * w0) +
 								((v1.uv / v1Pos.w) * w1) +
 								((v2.uv / v2Pos.w) * w2))
-								* wDepth;
+								* wDepth
+
+								// Normal
+
+								// Tangent
+
+								// ViewDirection
+							};
 							
-							// Ensure no out of bounds operations while sampling
-							if ((uv.x <= 1.0f && uv.x >= 0.0f) && (uv.y <= 1.0f && uv.y >= 0.0f)) {
-								ColorRGB finalColor;
-								
-								if (m_RenderDepth) finalColor = ColorRGB::Lerp(colors::White, { 0.1f }, zDepth); // Is this what the slides asked?
-								else finalColor = m_pTexture->Sample(uv);
-						
-								UpdateColor(pixelIndex, finalColor);
-							}
+							ColorRGB finalColor;
+							if (Utils::PixelShade(interpolated, m_pTexture, m_RenderDepth, finalColor)) UpdateColor(pixelIndex, finalColor);
+							// TODO: Each mesh stores their own data like textures instead of the renderer storing them
 						}
 					}
 				}
