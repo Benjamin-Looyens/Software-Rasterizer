@@ -4,6 +4,8 @@ namespace dae
 {
 	struct Vector2;
 	struct Vector4;
+	struct ColorRGB;
+
 	struct Vector3 final
 	{
 		float x{};
@@ -14,6 +16,7 @@ namespace dae
 		Vector3(float _x, float _y, float _z);
 		Vector3(const Vector3& from, const Vector3& to);
 		Vector3(const Vector4& v);
+		Vector3(const ColorRGB& col);
 
 		float Magnitude() const;
 		float SqrMagnitude() const;
@@ -31,6 +34,7 @@ namespace dae
 		static Vector3 Reject(const Vector3& v1, const Vector3& v2);
 		static Vector3 Reflect(const Vector3& v1, const Vector3& v2);
 
+		ColorRGB ToColor() const;
 		Vector4 ToPoint4() const;
 		Vector4 ToVector4() const;
 		Vector2 GetXY() const;

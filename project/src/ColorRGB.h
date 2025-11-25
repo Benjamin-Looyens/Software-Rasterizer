@@ -1,5 +1,6 @@
 #pragma once
 #include "MathHelpers.h"
+#include "Vector3.h"
 
 namespace dae
 {
@@ -9,6 +10,8 @@ namespace dae
 		ColorRGB(float _r, float _g, float _b) : r{ _r }, g{ _g }, b{ _b }
 		{};
 		ColorRGB(float _universal) : r{ _universal }, g{ _universal }, b{ _universal }
+		{};
+		ColorRGB(const Vector3& vec) : r{ vec.x }, g{ vec.y }, b{ vec.z }
 		{};
 
 		float r{};
@@ -27,7 +30,12 @@ namespace dae
 			return { Lerpf(c1.r, c2.r, factor), Lerpf(c1.g, c2.g, factor), Lerpf(c1.b, c2.b, factor) };
 		}
 
-		#pragma region ColorRGB (Member) Operators
+		inline Vector3 ToVector3() const
+		{
+			return { r, g, b };
+		}
+
+#pragma region ColorRGB (Member) Operators
 		const ColorRGB& operator+=(const ColorRGB& c)
 		{
 			r += c.r;
@@ -111,7 +119,7 @@ namespace dae
 		{
 			return { r / s, g / s, b / s };
 		}
-		#pragma endregion
+#pragma endregion
 	};
 
 	//ColorRGB (Global) Operators
