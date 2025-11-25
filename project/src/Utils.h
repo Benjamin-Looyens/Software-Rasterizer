@@ -42,11 +42,38 @@ namespace dae
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT
-		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, bool renderDepth, ColorRGB& color_OUT)
+		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, bool renderDepth, const Vector3& lightDir, ColorRGB& color_OUT)
 		{
 			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
+				// TODO : change renderDepth variable to an enum to switch between LightingModes
 				if (renderDepth) color_OUT = ColorRGB::Lerp(colors::White, { 0.1f }, vert.position.z); // Is this what the slides asked?
-				else color_OUT = meshTexture.pDiffuse->Sample(vert.uv);
+				else {
+					// Lambert(diffuseReflectance, diffuseColor)
+					// static ColorRGB Lambert(float kd, const ColorRGB& cd) { return (kd / PI) * cd; }
+					
+					// cosine law:
+					// const float observedArea = Vector3::Dot(latestHit.normal, lightDir);
+
+					// Lambert cosine law:
+					// Lambert * observedArea
+
+					// Shininess = 25.0f
+					// Ambient = { 0.25f, 0.25f, 0.25f }
+
+					constexpr float lightIntensity = 7.0f;
+
+					constexpr float kd = 1.0f; // TODO : Check if this is something else?
+					const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
+					const ColorRGB lambert = ((kd / PI) * diffuse);
+
+					const float observedArea = std::max(0.0f, Vector3::Dot(vert.normal, -lightDir.Normalized()));
+
+					color_OUT = lightIntensity * 
+								lambert * 
+								observedArea;
+
+					//color_OUT = { observedArea };
+				}
 				
 				return true;
 			}

@@ -200,26 +200,32 @@ void Renderer::Render()
 
 								// Color
 								(((v0.color / v0Pos.w) * w0) +
-								((v1.color / v1Pos.w) * w1) +
-								((v2.color / v2Pos.w) * w2))
+								((v1.color / v1Pos.w)  * w1) +
+								((v2.color / v2Pos.w)  * w2))
 								* wDepth,
 
 								// UV
 								(((v0.uv / v0Pos.w) * w0) +
-								((v1.uv / v1Pos.w) * w1) +
-								((v2.uv / v2Pos.w) * w2))
-								* wDepth
+								((v1.uv / v1Pos.w)  * w1) +
+								((v2.uv / v2Pos.w)  * w2))
+								* wDepth,
 
 								// Normal
+								((v0.normal * w0) +
+								(v1.normal * w1) +
+								(v2.normal * w2)).Normalized(),
 
 								// Tangent
 
 								// ViewDirection
 							};
 							
+							constexpr float LIGHT_VALUE = 0.577f;
+
 							ColorRGB finalColor;
-							if (Utils::PixelShade(interpolated, mesh.textureData, m_RenderDepth, finalColor)) UpdateColor(pixelIndex, finalColor);
-							// TODO: Each mesh stores their own data like textures instead of the renderer storing them
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_RenderDepth, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, finalColor)) {
+								UpdateColor(pixelIndex, finalColor);
+							}
 						}
 					}
 				}
@@ -254,9 +260,9 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 
 			return Vertex_Out{ clip, vert.color, vert.uv, 
 				
-				worldViewProjectionMatrix.TransformVector(vert.normal), 
-				worldViewProjectionMatrix.TransformVector(vert.tangent),
-				worldViewProjectionMatrix.TransformVector(vert.viewDirection) 
+				worldMat.TransformVector(vert.normal), 
+				worldMat.TransformVector(vert.tangent),
+				worldMat.TransformVector(vert.viewDirection) 
 			};
 		}
 	);
