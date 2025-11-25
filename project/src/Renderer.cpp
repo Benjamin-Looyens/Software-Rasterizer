@@ -28,14 +28,16 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	// Initialize Meshes
 	m_Meshes.push_back({});
-	if (!Utils::ParseOBJ("resources/tuktuk.obj", m_Meshes[0].vertices, m_Meshes[0].indices)) {
+	if (!Utils::ParseOBJ("resources/vehicle.obj", m_Meshes[0].vertices, m_Meshes[0].indices)) {
 		assert(false && "Mesh Could not be Initialized!");
 	}
 	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
-	m_Meshes[0].textureData = { Texture::LoadFromFile("resources/tuktuk.png"), nullptr, nullptr };
+	m_Meshes[0].textureData = { Texture::LoadFromFile("resources/vehicle_diffuse.png"), 
+								Texture::LoadFromFile("resources/vehicle_normal.png"), 
+								Texture::LoadFromFile("resources/vehicle_specular.png") };
 
 	//Initialize Camera
-	m_Camera.Initialize(m_Width, m_Height, 60.f, m_CameraStartPos);
+	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
 }
 
 Renderer::~Renderer()
@@ -65,7 +67,7 @@ void Renderer::Render()
 {
 	//@START
 	// Clear BackBuffer
-	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 0, 0, 0));
+	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 75, 75, 75));
 
 	// Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);

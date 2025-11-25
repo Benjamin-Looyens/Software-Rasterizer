@@ -65,6 +65,6 @@ namespace dae
 		
 		bool m_DoRotation{ false };
 
-		const Vector3 m_CameraStartPos{ 0.0f, 5.0f, -30.0f };
+		const Vector3 m_CameraStartPos{ 0.0f, 0.0f, -50.0f }; // TODO : Change to be 0.0f in the Z, and have the mesh be at 50.0f at Z
 	};
 }
