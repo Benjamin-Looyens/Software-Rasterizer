@@ -42,11 +42,11 @@ namespace dae
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT
-		bool PixelShade(const Vertex_Out& vert, const Texture const* pTexture, bool renderDepth, ColorRGB& color_OUT)
+		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, bool renderDepth, ColorRGB& color_OUT)
 		{
 			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
 				if (renderDepth) color_OUT = ColorRGB::Lerp(colors::White, { 0.1f }, vert.position.z); // Is this what the slides asked?
-				else color_OUT = pTexture->Sample(vert.uv);
+				else color_OUT = meshTexture.pDiffuse->Sample(vert.uv);
 				
 				return true;
 			}

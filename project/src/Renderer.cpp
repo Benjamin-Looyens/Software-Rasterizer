@@ -26,25 +26,26 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
 	m_pDepthBuffer = new float[m_Width * m_Height];
 
-	// Load texture (TEMP)
-	m_pTexture = Texture::LoadFromFile("resources/tuktuk.png");
-
 	// Initialize Meshes
 	m_Meshes.push_back({});
 	if (!Utils::ParseOBJ("resources/tuktuk.obj", m_Meshes[0].vertices, m_Meshes[0].indices)) {
 		assert(false && "Mesh Could not be Initialized!");
 	}
 	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
+	m_Meshes[0].textureData = { Texture::LoadFromFile("resources/tuktuk.png"), nullptr, nullptr };
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 60.f, m_CameraStartPos);
-	m_Camera.nearPlane = 2.0f; // ???
 }
 
 Renderer::~Renderer()
 {
 	delete[] m_pDepthBuffer;
-	delete m_pTexture;
+
+	// HACK : Feels really stupid but it was somehow freeing memory when just attaching these deletes to the destructor
+	for (Mesh& mesh : m_Meshes) {
+		mesh.textureData.FreeMemory();
+	}
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -53,7 +54,10 @@ void Renderer::Update(Timer* pTimer)
 
 	if (m_DoRotation) {
 		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
-		m_WorldMatrix = Matrix::CreateRotationY(m_RotCounter);
+
+		for (Mesh& mesh : m_Meshes) {
+			mesh.worldMatrix = Matrix::CreateRotationY(m_RotCounter);
+		}
 	}
 }
 
@@ -71,7 +75,7 @@ void Renderer::Render()
 
 	// Convert to NDC
 	for (Mesh& mesh : m_Meshes) {
-		VertexTransformationFunction(mesh.vertices, mesh.vertices_out); // TODO : potentially apply the dirty pattern
+		VertexTransformationFunction(mesh.vertices, mesh.vertices_out, mesh.worldMatrix); // TODO : potentially apply the dirty pattern
 	}
 
 	//RENDER LOGIC
@@ -212,7 +216,7 @@ void Renderer::Render()
 							};
 							
 							ColorRGB finalColor;
-							if (Utils::PixelShade(interpolated, m_pTexture, m_RenderDepth, finalColor)) UpdateColor(pixelIndex, finalColor);
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_RenderDepth, finalColor)) UpdateColor(pixelIndex, finalColor);
 							// TODO: Each mesh stores their own data like textures instead of the renderer storing them
 						}
 					}
@@ -228,13 +232,13 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const
+void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out, const Matrix& worldMat) const
 {
 	vertices_out.resize(vertices_in.size());
 	
 	const float& aspectRatio = m_Camera.aspectRatio;
 
-	const Matrix worldViewProjectionMatrix = m_WorldMatrix * m_Camera.viewMatrix * m_Camera.projectMatrix;
+	const Matrix worldViewProjectionMatrix = worldMat * m_Camera.viewMatrix * m_Camera.projectMatrix;
 
 	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {

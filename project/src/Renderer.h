@@ -31,7 +31,7 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
+		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out, const Matrix& worldMat) const;
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
@@ -53,9 +53,6 @@ namespace dae
 
 		std::vector<Mesh> m_Meshes;
 		
-		// TEMP Texture
-		Texture* m_pTexture{ nullptr };
-
 		float* m_pDepthBuffer{};
 
 		Camera m_Camera{};

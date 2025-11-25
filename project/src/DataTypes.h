@@ -30,11 +30,25 @@ namespace dae
 		TriangleStrip
 	};
 
+	struct TextureData {
+		Texture* pDiffuse;
+		Texture* pNormal;
+		Texture* pSpecular;
+
+		void FreeMemory()
+		{
+			delete pDiffuse;
+			delete pNormal;
+			delete pSpecular;
+		}
+	};
+
 	struct Mesh
 	{
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
+		TextureData textureData;
 
 		std::vector<Vertex_Out> vertices_out{};
 		Matrix worldMatrix{};
