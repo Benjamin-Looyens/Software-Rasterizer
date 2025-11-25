@@ -224,7 +224,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 									view.w
 			}; 
 
-			return Vertex_Out{ clip, vert.color, vert.uv };
+			return Vertex_Out{ clip, vert.color, vert.uv, vert.normal, vert.tangent, vert.viewDirection };
 		}
 	);
 }
