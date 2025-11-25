@@ -250,7 +250,12 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 									view.w
 			}; 
 
-			return Vertex_Out{ clip, vert.color, vert.uv, vert.normal, vert.tangent, vert.viewDirection };
+			return Vertex_Out{ clip, vert.color, vert.uv, 
+				
+				worldViewProjectionMatrix.TransformVector(vert.normal), 
+				worldViewProjectionMatrix.TransformVector(vert.tangent),
+				worldViewProjectionMatrix.TransformVector(vert.viewDirection) 
+			};
 		}
 	);
 }
