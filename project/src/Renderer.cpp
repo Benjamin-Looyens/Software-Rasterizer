@@ -159,14 +159,24 @@ void Renderer::Render()
 							w1 * (1 / v1Pos.z) +
 							w2 * (1 / v2Pos.z));
 
+						// TODO : Potentially collapse the following "Stage" to a different function (Pixel sampling stage)
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
+
+							// TODO : Create a Vertex_Out here instead of the raw values, and use that for Pixel "Shading"
+							//			Consisting of:
+							//			Vector4 { X_ScreenSpace, Y_ScreenSpace, zDepth, wDepth },
+							//			Interpolated ColorRGB (like we did before UVs)
+							//			Interpolated UVs
+							//			Interpolated Normal
+							//			Interpolated Tangent
+							//			Interpolated ViewDir
+
 							const float wDepth = 1 / (
 								w0 * (1 / v0Pos.w) +
 								w1 * (1 / v1Pos.w) +
 								w2 * (1 / v2Pos.w));
 
-							// TODO : Implement compatibilty & choice between [UV + texture] or [vertex colors]
 							const Vector2 uv = (
 								((v0.uv / v0Pos.w) * w0) +
 								((v1.uv / v1Pos.w) * w1) +
