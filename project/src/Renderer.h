@@ -35,6 +35,8 @@ namespace dae
 
 		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
 		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
+
+		void ToggleRotation() { m_DoRotation = !m_DoRotation; }
 		void ResetCamera();
 
 	private:
@@ -63,6 +65,8 @@ namespace dae
 
 		bool m_RenderBounds{ false };
 		bool m_RenderDepth{ false };
+		
+		bool m_DoRotation{ false };
 
 		const Vector3 m_CameraStartPos{ 0.0f, 5.0f, -30.0f };
 	};

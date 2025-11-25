@@ -80,6 +80,8 @@ int main(int argc, char* args[])
 					pRenderer->ToggleBoundsRender();
 				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
 					pRenderer->ToggleDepthRender();
+				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
+					pRenderer->ToggleRotation();
 				break;
 			}
 		}

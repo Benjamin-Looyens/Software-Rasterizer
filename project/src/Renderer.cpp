@@ -51,8 +51,10 @@ void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
 
-	m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
-	m_WorldMatrix = Matrix::CreateRotationY(m_RotCounter);
+	if (m_DoRotation) {
+		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
+		m_WorldMatrix = Matrix::CreateRotationY(m_RotCounter);
+	}
 }
 
 void Renderer::Render()
