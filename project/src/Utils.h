@@ -44,68 +44,59 @@ namespace dae
 		// Stores RGB data for pixel within color_OUT
 		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
 		{
-			// Shininess = 25.0f
-			// Ambient = { 0.25f, 0.25f, 0.25f }
+			constexpr float ambientVal = 0.025f;
+			constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
+			constexpr float shininess = 25.0f;
 
-			// TODO : Check if the uv check is needed anymore after frustum culling
-			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
-				constexpr float ambientVal = 0.025f;
-				constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
+			const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
+			const Matrix tangentSpace = { vert.tangent, binormal, vert.normal, Vector3::Zero };
 
-				const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
-				const Matrix tangentSpace = { vert.tangent, binormal, vert.normal, Vector3::Zero };
+			// TODO : Collapse normalMapSample into a singular line (so it can be const)
+			Vector3 normalMapSample = { meshTexture.pNormal->Sample(vert.uv) };
+			normalMapSample = 2.0f * normalMapSample - Vector3{ 1.0f, 1.0f, 1.0f };
+			normalMapSample = tangentSpace.TransformVector(normalMapSample).Normalized();
 
-				Vector3 normalMapSample = { meshTexture.pNormal->Sample(vert.uv) };
-				normalMapSample = 2.0f * normalMapSample - Vector3{ 1.0f, 1.0f, 1.0f };
-				normalMapSample = tangentSpace.TransformVector(normalMapSample).Normalized();
+			const Vector3& normal = useNormalMap ? normalMapSample : vert.normal;
 
-				const Vector3& normal = useNormalMap ? normalMapSample : vert.normal;
+			// Observed Area Calc
+			const float observedArea = std::max(0.0f, Vector3::Dot(normal, lightDir));
 
-				// Observed Area Calc
-				const float observedArea = std::max(0.0f, Vector3::Dot(normal, lightDir));
+			// Lambert calc
+			constexpr float kd = 1.0f;
+			const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
+			const ColorRGB lambert = ((kd / PI) * diffuse);
 
-				// Lambert calc
-				constexpr float kd = 1.0f;
-				const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
-				const ColorRGB lambert = ((kd / PI) * diffuse);
+			// Specular (Phong) Calc
+			const float ks = meshTexture.pSpecular->Sample(vert.uv).r;
+			const float exp = meshTexture.pGloss->Sample(vert.uv).r;
 
-				// Specular (Phong) Calc
-				constexpr float shininess = 25.0f;
+			const Vector3 reflect = lightDir - (2.0f * (Vector3::Dot(lightDir, normal) * normal));
+			const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
+			const float specular = ks * std::powf(cosAngle, exp * shininess);
 
-				const ColorRGB specularColor = meshTexture.pSpecular->Sample(vert.uv); // NOTE : I can get rid of storing these (as they are not required later)
-				const ColorRGB gloss = meshTexture.pGloss->Sample(vert.uv);			   // NOTE : I can get rid of storing these (as they are not required later)
-				const float& ks = specularColor.r;
-				const float& exp = gloss.r;
-
-				const Vector3 reflect = lightDir - (2.0f * (Vector3::Dot(lightDir, normal) * normal));
-				const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
-				const float specular = ks * std::powf(cosAngle, exp * shininess);
-
-				switch (mode)
-				{
-					case Renderer::LightingMode::ObservedArea:
-						color_OUT = { observedArea };
+			// TODO : Ideally, only compute what is necessary instead of calculating it all before switch statement
+			switch (mode)
+			{
+				case Renderer::LightingMode::ObservedArea:
+					color_OUT = { observedArea };
+				break;
+				case Renderer::LightingMode::Diffuse:
+					color_OUT = lightIntensity *
+								lambert *
+								observedArea;
 					break;
-					case Renderer::LightingMode::Diffuse:
-						color_OUT = lightIntensity *
-									lambert *
-									observedArea;
-						break;
-					case Renderer::LightingMode::Specular:
-						color_OUT = { specular };
-						break;
-					case Renderer::LightingMode::Combined:
-						color_OUT = ((lightIntensity * lambert) +
-									specular) *
-									observedArea +
-									ColorRGB{ ambientVal };
+				case Renderer::LightingMode::Specular:
+					color_OUT = { specular };
 					break;
-				}
-
-				return true;
+				case Renderer::LightingMode::Combined:
+					color_OUT = ((lightIntensity * lambert) +
+								specular) *
+								observedArea +
+								ColorRGB{ ambientVal };
+				break;
 			}
 
-			return false;
+			return true;
 		}
 
 		//Just parses vertices and indices
