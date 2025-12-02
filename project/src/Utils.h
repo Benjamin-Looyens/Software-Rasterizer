@@ -60,7 +60,25 @@ namespace dae
 
 				const Vector3& normal = useNormalMap ? normalMapSample : vert.normal;
 
-				const float observedArea = std::max(0.0f, Vector3::Dot(normal, -lightDir.Normalized())); // DO I need to normalize the lightDir?
+				// Observed Area Calc
+				const float observedArea = std::max(0.0f, Vector3::Dot(normal, lightDir));
+
+				// Lambert calc
+				constexpr float kd = 1.0f;
+				const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
+				const ColorRGB lambert = ((kd / PI) * diffuse);
+
+				// Specular (Phong) Calc
+				constexpr float shininess = 25.0f;
+
+				const ColorRGB specularColor = meshTexture.pSpecular->Sample(vert.uv); // NOTE : I can get rid of storing these (as they are not required later)
+				const ColorRGB gloss = meshTexture.pGloss->Sample(vert.uv);			   // NOTE : I can get rid of storing these (as they are not required later)
+				const float& ks = specularColor.r;
+				const float& exp = gloss.r;
+
+				const Vector3 reflect = lightDir - (2.0f * (Vector3::Dot(lightDir, normal) * normal));
+				const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
+				const float specular = ks * std::powf(cosAngle, exp * shininess);
 
 				switch (mode)
 				{
@@ -68,19 +86,13 @@ namespace dae
 						color_OUT = { observedArea };
 					break;
 					case Renderer::LightingMode::Diffuse:
-					{
-						constexpr float kd = 1.0f;
-						const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
-						const ColorRGB lambert = ((kd / PI) * diffuse);
-
 						color_OUT = lightIntensity *
 									lambert *
 									observedArea;
 						break;
-					}
 					case Renderer::LightingMode::Specular:
-						return false;
-					break;
+						color_OUT = { specular };
+						break;
 					case Renderer::LightingMode::Combined:
 						return false;
 					break;

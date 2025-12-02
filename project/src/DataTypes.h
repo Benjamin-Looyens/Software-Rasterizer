@@ -23,7 +23,7 @@ namespace dae
 		Vector3 tangent{};
 		Vector3 viewDirection{};
 	};
-
+	
 	enum class PrimitiveTopology
 	{
 		TriangleList,
@@ -34,12 +34,14 @@ namespace dae
 		Texture* pDiffuse;
 		Texture* pNormal;
 		Texture* pSpecular;
+		Texture* pGloss;
 
 		void FreeMemory()
 		{
 			delete pDiffuse;
 			delete pNormal;
 			delete pSpecular;
+			delete pGloss;
 		}
 	};
 

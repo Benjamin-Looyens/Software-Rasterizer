@@ -34,7 +34,8 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_Meshes[0].primitiveTopology = PrimitiveTopology::TriangleList;
 	m_Meshes[0].textureData = { Texture::LoadFromFile("resources/vehicle_diffuse.png"), 
 								Texture::LoadFromFile("resources/vehicle_normal.png"), 
-								Texture::LoadFromFile("resources/vehicle_specular.png") };
+								Texture::LoadFromFile("resources/vehicle_specular.png"),
+								Texture::LoadFromFile("resources/vehicle_gloss.png") };
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
@@ -185,7 +186,7 @@ void Renderer::Render()
 
 							Vertex_Out interpolated{
 								// Position
-								{
+								{ 	
 									1 / (
 										w0 * (1 / v0Pos.x) +
 										w1 * (1 / v1Pos.x) +
@@ -194,8 +195,7 @@ void Renderer::Render()
 										w0 * (1 / v0Pos.y) +
 										w1 * (1 / v1Pos.y) +
 										w2 * (1 / v2Pos.y)),
-									zDepth,
-									wDepth
+									zDepth, wDepth 
 								},
 
 								// Color
@@ -218,15 +218,19 @@ void Renderer::Render()
 								// Tangent
 								((v0.tangent * w0) +
 								(v1.tangent  * w1) +
-								(v2.tangent  * w2)).Normalized()
+								(v2.tangent  * w2)).Normalized(),
 
 								// ViewDirection
+								((((v0.viewDirection / v0Pos.w) * w0) +
+								((v1.viewDirection / v1Pos.w)  * w1) +
+								((v2.viewDirection / v2Pos.w)  * w2)) * wDepth).Normalized()
 							};
 							
 							constexpr float LIGHT_VALUE = 0.577f;
-
+							const Vector3 lightDir{ LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE };
+							
 							ColorRGB finalColor;
-							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, { LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE }, m_UseNormalMap, finalColor)) {
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, -lightDir.Normalized(), m_UseNormalMap, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
 						}
@@ -265,7 +269,8 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 				
 				worldMat.TransformVector(vert.normal), 
 				worldMat.TransformVector(vert.tangent),
-				worldMat.TransformVector(vert.viewDirection) 
+				//(vert.position - m_Camera.origin).Normalized()
+				(Vector3{ clip } - m_Camera.origin).Normalized()
 			};
 		}
 	);
