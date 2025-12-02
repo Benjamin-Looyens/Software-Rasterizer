@@ -49,6 +49,7 @@ namespace dae
 
 			// TODO : Check if the uv check is needed anymore after frustum culling
 			if ((vert.uv.x <= 1.0f && vert.uv.x >= 0.0f) && (vert.uv.y <= 1.0f && vert.uv.y >= 0.0f)) {
+				constexpr float ambientVal = 0.025f;
 				constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
 
 				const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
@@ -96,9 +97,8 @@ namespace dae
 					case Renderer::LightingMode::Combined:
 						color_OUT = ((lightIntensity * lambert) +
 									specular) *
-									observedArea;
-
-
+									observedArea +
+									ColorRGB{ ambientVal };
 					break;
 				}
 
