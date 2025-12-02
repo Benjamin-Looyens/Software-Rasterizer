@@ -177,9 +177,7 @@ namespace dae
 
 			//Update Matrices
 			if (viewDirty) CalculateViewMatrix();
-			if (projectDirty) CalculateProjectionMatrix();	// TODO : Figure out when to mark projectDirty
-															//		  comment from starter files: Try to optimize this (CalculateProjectionMatrix),
-															//									  should only be called once or when fov/aspectRatio changes
+			if (projectDirty) CalculateProjectionMatrix();
 		}
 	};
 }

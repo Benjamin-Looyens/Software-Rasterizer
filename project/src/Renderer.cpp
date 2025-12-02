@@ -157,7 +157,7 @@ void Renderer::Render()
 					if (in0 >= 0 && in1 >= 0 && in2 >= 0) {
 						const float magnitude = in0 + in1 + in2;
 
-						const float w0 = in1 / magnitude; // For some reason shifting the inside checks over by 1 vertex fixed my clipping issue ????
+						const float w0 = in1 / magnitude;
 						const float w1 = in2 / magnitude; 
 						const float w2 = in0 / magnitude; 
 
@@ -169,15 +169,6 @@ void Renderer::Render()
 						// TODO : Potentially collapse the following "Stage" to a different function (Pixel sampling stage)
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
-
-							// TODO : Create a Vertex_Out here instead of the raw values, and use that for Pixel "Shading"
-							//			Consisting of:
-							//			Vector4 { X_ScreenSpace, Y_ScreenSpace, zDepth, wDepth },
-							//			Interpolated ColorRGB (like we did before UVs)
-							//			Interpolated UVs
-							//			Interpolated Normal
-							//			Interpolated Tangent
-							//			Interpolated ViewDir
 
 							const float wDepth = 1 / (
 								w0 * (1 / v0Pos.w) +
