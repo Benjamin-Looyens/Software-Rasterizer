@@ -56,7 +56,7 @@ namespace dae
 	private:
 		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
 
-		LightingMode m_CurMode{ LightingMode::Specular };
+		LightingMode m_CurMode{ LightingMode::Combined };
 
 		SDL_Window* m_pWindow{};
 

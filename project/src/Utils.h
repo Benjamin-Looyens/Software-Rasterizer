@@ -94,7 +94,11 @@ namespace dae
 						color_OUT = { specular };
 						break;
 					case Renderer::LightingMode::Combined:
-						return false;
+						color_OUT = ((lightIntensity * lambert) +
+									specular) *
+									observedArea;
+
+
 					break;
 				}
 
