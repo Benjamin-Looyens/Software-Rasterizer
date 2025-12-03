@@ -11,6 +11,7 @@
 // Standard includes
 #include <limits>
 #include <iostream>
+#include <execution>
 
 using namespace dae;
 
@@ -246,7 +247,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 
 	const Matrix worldViewProjectionMatrix = worldMat * m_Camera.viewMatrix * m_Camera.projectMatrix;
 
-	std::transform(begin(vertices_in), end(vertices_in), begin(vertices_out),
+	std::transform(std::execution::par, begin(vertices_in), end(vertices_in), begin(vertices_out),
 		[&](const Vertex& vert) {
 			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.position, 1.0f });
 			
