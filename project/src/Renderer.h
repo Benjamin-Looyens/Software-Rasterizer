@@ -31,10 +31,10 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out, const Matrix& worldMat) const;
+		void VertexTransformationFunction(const Matrix& worldMat, const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
 
-		void ToggleBoundsRender() { m_RenderBounds = !m_RenderBounds; }
-		void ToggleDepthRender() { m_RenderDepth = !m_RenderDepth; }
+		void ToggleBoundsRender() { m_DoBoundsRender = !m_DoBoundsRender; }
+		void ToggleDepthRender() { m_DoDepthRender = !m_DoDepthRender; }
 		void ToggleRotation() { m_DoRotation = !m_DoRotation; }
 		void ToggleNormalMap() { m_UseNormalMap = !m_UseNormalMap; }
 
@@ -76,12 +76,12 @@ namespace dae
 		int m_Width{};
 		int m_Height{};
 
-		bool m_RenderBounds{ false };
-		bool m_RenderDepth{ false };
-		
+		bool m_DoBoundsRender{ false };
+		bool m_DoDepthRender{ false };
 		bool m_DoRotation{ false };
-
 		bool m_UseNormalMap{ true };
+
+		bool m_VerticesDirty{ true };
 
 		const Vector3 m_CameraStartPos{ 0.0f, 0.0f, -50.0f }; // TODO : Change to be 0.0f in the Z, and have the mesh be at 50.0f at Z
 	};

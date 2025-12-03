@@ -55,6 +55,7 @@ Renderer::~Renderer()
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
+	if (m_Camera.updatedMatricesThisFrame) m_VerticesDirty = true;
 
 	if (m_DoRotation) {
 		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
@@ -62,6 +63,7 @@ void Renderer::Update(Timer* pTimer)
 		for (Mesh& mesh : m_Meshes) {
 			mesh.worldMatrix = Matrix::CreateRotationY(m_RotCounter);
 		}
+		m_VerticesDirty = true;
 	}
 }
 
@@ -78,8 +80,11 @@ void Renderer::Render()
 	std::fill_n(m_pDepthBuffer, m_Width * m_Height, std::numeric_limits<float>::max());
 
 	// Convert to NDC
-	for (Mesh& mesh : m_Meshes) {
-		VertexTransformationFunction(mesh.vertices, mesh.vertices_out, mesh.worldMatrix); // TODO : potentially apply the dirty pattern
+	if (m_VerticesDirty) {
+		for (Mesh& mesh : m_Meshes) {
+			VertexTransformationFunction(mesh.worldMatrix, mesh.vertices, mesh.vertices_out);
+		}
+		m_VerticesDirty = false;
 	}
 
 	//RENDER LOGIC
@@ -135,7 +140,7 @@ void Renderer::Render()
 				for (uint32_t py{ minY }; py < maxY; ++py) {
 					const int pixelIndex = px + (py * m_Width);
 
-					if (m_RenderBounds) {
+					if (m_DoBoundsRender) {
 						if ((px == minX || py == minY) || 
 							(px == maxX - 1 || py == maxY - 1)) {
 							ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
@@ -239,15 +244,15 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out, const Matrix& worldMat) const
+void Renderer::VertexTransformationFunction(const Matrix& worldMat, const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_OUT) const
 {
-	vertices_out.resize(vertices_in.size());
+	vertices_OUT.resize(vertices_in.size());
 	
 	const float& aspectRatio = m_Camera.aspectRatio;
 
 	const Matrix worldViewProjectionMatrix = worldMat * m_Camera.viewMatrix * m_Camera.projectMatrix;
 
-	std::transform(std::execution::par, begin(vertices_in), end(vertices_in), begin(vertices_out),
+	std::transform(std::execution::par, begin(vertices_in), end(vertices_in), begin(vertices_OUT),
 		[&](const Vertex& vert) {
 			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.position, 1.0f });
 			

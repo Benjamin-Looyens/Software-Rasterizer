@@ -40,6 +40,8 @@ namespace dae
 		Matrix projectMatrix{};
 		bool projectDirty = true;
 
+		bool updatedMatricesThisFrame = false;
+
 		float nearPlane{ 1.0f };
 		float farPlane{ 1000.0f };
 
@@ -77,6 +79,7 @@ namespace dae
 				invViewMatrix = CalculateCameraToWorld();
 				viewMatrix = Matrix::Inverse(invViewMatrix);
 				viewDirty = false;
+				updatedMatricesThisFrame = true;
 			}
 		}
 
@@ -95,6 +98,7 @@ namespace dae
 				};
 
 				projectDirty = false;
+				updatedMatricesThisFrame = true;
 			}
 		}
 
@@ -110,6 +114,8 @@ namespace dae
 
 		void Update(Timer* pTimer)
 		{
+			updatedMatricesThisFrame = false;
+
 			const float deltaTime = pTimer->GetElapsed();
 
 			Vector3 movement{};
