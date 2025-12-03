@@ -62,9 +62,8 @@ namespace dae
 			const float observedArea = std::max(0.0f, Vector3::Dot(normal, lightDir));
 
 			// Lambert calc
-			constexpr float kd = 1.0f;
 			const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
-			const ColorRGB lambert = ((kd / PI) * diffuse);
+			const ColorRGB lambert = ((lightIntensity / PI) * diffuse);
 
 			// Specular (Phong) Calc
 			const float ks = meshTexture.pSpecular->Sample(vert.uv).r;
@@ -81,16 +80,14 @@ namespace dae
 					color_OUT = { observedArea };
 				break;
 				case Renderer::LightingMode::Diffuse:
-					color_OUT = lightIntensity *
-								lambert *
+					color_OUT = lambert *
 								observedArea;
 					break;
 				case Renderer::LightingMode::Specular:
 					color_OUT = { specular };
 					break;
 				case Renderer::LightingMode::Combined:
-					color_OUT = ((lightIntensity * lambert) +
-								specular) *
+					color_OUT = (lambert + specular) *
 								observedArea +
 								ColorRGB{ ambientVal };
 				break;
@@ -104,14 +101,6 @@ namespace dae
 #pragma warning(disable : 4505) //Warning unreferenced local function
 		static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, bool flipAxisAndWinding = true)
 		{
-#ifdef DISABLE_OBJ
-
-			//TODO: Enable the code below after uncommenting all the vertex attributes of DataTypes::Vertex
-			// >> Comment/Remove '#define DISABLE_OBJ'
-			assert(false && "OBJ PARSER not enabled! Check the comments in Utils::ParseOBJ");
-
-#else
-
 			std::ifstream file(filename);
 			if (!file)
 				return false;
@@ -258,7 +247,6 @@ namespace dae
 			}
 
 			return true;
-#endif
 		}
 #pragma warning(pop)
 	}
