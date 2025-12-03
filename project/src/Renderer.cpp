@@ -260,7 +260,6 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 				
 				worldMat.TransformVector(vert.normal), 
 				worldMat.TransformVector(vert.tangent),
-				//(vert.position - m_Camera.origin).Normalized()
 				(Vector3{ clip } - m_Camera.origin).Normalized()
 			};
 		}
@@ -297,7 +296,7 @@ void dae::Renderer::ResetCamera()
 	m_Camera.ResetOrientation();
 }
 
-void dae::Renderer::UpdateColor(const int& index, ColorRGB& col)
+void dae::Renderer::UpdateColor(const uint32_t& index, ColorRGB& col)
 {
 	//Update Color in Buffer
 	col.MaxToOne();

@@ -54,7 +54,7 @@ namespace dae
 		// Does it need a depth render mode?
 
 	private:
-		void UpdateColor(const int& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
+		void UpdateColor(const uint32_t& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
 
 		LightingMode m_CurMode{ LightingMode::Combined };
 
