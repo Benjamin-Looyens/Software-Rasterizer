@@ -37,6 +37,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 								Texture::LoadFromFile("resources/vehicle_normal.png"), 
 								Texture::LoadFromFile("resources/vehicle_specular.png"),
 								Texture::LoadFromFile("resources/vehicle_gloss.png") };
+	m_Meshes[0].worldMatrix = Matrix::CreateTranslation(m_MeshPos);
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
@@ -61,7 +62,7 @@ void Renderer::Update(Timer* pTimer)
 		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
 
 		for (Mesh& mesh : m_Meshes) {
-			mesh.worldMatrix = Matrix::CreateRotationY(m_RotCounter);
+			mesh.worldMatrix = Matrix::CreateRotationY(m_RotCounter) * Matrix::CreateTranslation(m_MeshPos);
 		}
 		m_VerticesDirty = true;
 	}
@@ -249,11 +250,11 @@ void Renderer::VertexTransformationFunction(const Matrix& worldMat, const std::v
 	vertices_OUT.resize(vertices_in.size());
 	
 	const float& aspectRatio = m_Camera.aspectRatio;
-
 	const Matrix worldViewProjectionMatrix = worldMat * m_Camera.viewMatrix * m_Camera.projectMatrix;
 
 	std::transform(std::execution::par, begin(vertices_in), end(vertices_in), begin(vertices_OUT),
 		[&](const Vertex& vert) {
+			const Vector3 worldPos = worldMat.TransformPoint(vert.position);
 			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.position, 1.0f });
 			
 			const Vector4 clip = {	view.x / view.w,
@@ -264,9 +265,9 @@ void Renderer::VertexTransformationFunction(const Matrix& worldMat, const std::v
 
 			return Vertex_Out{ clip, vert.color, vert.uv, 
 				
-				worldMat.TransformVector(vert.normal), 
+				worldMat.TransformVector(vert.normal),
 				worldMat.TransformVector(vert.tangent),
-				(Vector3{ clip } - m_Camera.origin).Normalized()
+				(worldPos - m_Camera.origin).Normalized()
 			};
 		}
 	);

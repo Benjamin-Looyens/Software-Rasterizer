@@ -83,6 +83,7 @@ namespace dae
 
 		bool m_VerticesDirty{ true };
 
-		const Vector3 m_CameraStartPos{ 0.0f, 0.0f, -50.0f }; // TODO : Change to be 0.0f in the Z, and have the mesh be at 50.0f at Z
+		const Vector3 m_CameraStartPos{ 0.0f, 0.0f, 0.0f };
+		const Vector3 m_MeshPos{ 0.0f, 0.0f, 50.0f };
 	};
 }
