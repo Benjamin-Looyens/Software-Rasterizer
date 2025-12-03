@@ -41,6 +41,8 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
+	m_Camera.farPlane = 0.1f;
+	m_Camera.farPlane = 100.0f;
 }
 
 Renderer::~Renderer()

@@ -44,9 +44,9 @@ namespace dae
 		// Stores RGB data for pixel within color_OUT
 		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
 		{
-			constexpr float ambientVal = 0.025f;
-			constexpr float lightIntensity = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
-			constexpr float shininess = 25.0f;
+			constexpr float AMBIENT_VALUE = 0.03f;
+			constexpr float LIGHT_INTENSITY = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
+			constexpr float SHININESS = 25.0f;
 
 			const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
 			const Matrix tangentSpace = { vert.tangent, binormal, vert.normal, Vector3::Zero };
@@ -63,7 +63,7 @@ namespace dae
 
 			// Lambert calc
 			const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
-			const ColorRGB lambert = ((lightIntensity / PI) * diffuse);
+			const ColorRGB lambert = ((LIGHT_INTENSITY / PI) * diffuse);
 
 			// Specular (Phong) Calc
 			const float ks = meshTexture.pSpecular->Sample(vert.uv).r;
@@ -71,7 +71,7 @@ namespace dae
 
 			const Vector3 reflect = lightDir - (2.0f * (Vector3::Dot(lightDir, normal) * normal));
 			const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
-			const float specular = ks * std::powf(cosAngle, exp * shininess);
+			const float specular = ks * std::powf(cosAngle, exp * SHININESS);
 
 			// TODO : Ideally, only compute what is necessary instead of calculating it all before switch statement
 			switch (mode)
@@ -89,7 +89,7 @@ namespace dae
 				case Renderer::LightingMode::Combined:
 					color_OUT = (lambert + specular) *
 								observedArea +
-								ColorRGB{ ambientVal };
+								ColorRGB{ AMBIENT_VALUE };
 				break;
 			}
 
