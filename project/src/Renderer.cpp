@@ -37,7 +37,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 								Texture::LoadFromFile("resources/vehicle_normal.png"), 
 								Texture::LoadFromFile("resources/vehicle_specular.png"),
 								Texture::LoadFromFile("resources/vehicle_gloss.png") };
-	m_Meshes[0].worldMatrix = Matrix::CreateTranslation(m_MeshPos);
+	m_Meshes[0].worldMatrixTransform.SetTranslation(m_MeshPos);
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
@@ -62,7 +62,7 @@ void Renderer::Update(Timer* pTimer)
 		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
 
 		for (Mesh& mesh : m_Meshes) {
-			mesh.worldMatrix = Matrix::CreateRotationY(m_RotCounter) * Matrix::CreateTranslation(m_MeshPos);
+			mesh.worldMatrixTransform.SetRotationY(m_RotCounter);
 		}
 		m_VerticesDirty = true;
 	}
@@ -83,7 +83,7 @@ void Renderer::Render()
 	// Convert to NDC
 	if (m_VerticesDirty) {
 		for (Mesh& mesh : m_Meshes) {
-			VertexTransformationFunction(mesh.worldMatrix, mesh.vertices, mesh.vertices_out);
+			VertexTransformationFunction(mesh.worldMatrixTransform.GetFull(), mesh.vertices, mesh.vertices_out);
 		}
 		m_VerticesDirty = false;
 	}

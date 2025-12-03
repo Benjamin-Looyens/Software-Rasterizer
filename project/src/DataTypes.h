@@ -121,6 +121,6 @@ namespace dae
 		TextureData textureData;
 
 		std::vector<Vertex_Out> vertices_out{};
-		Matrix worldMatrix{};
+		Transform worldMatrixTransform{};
 	};
 }
