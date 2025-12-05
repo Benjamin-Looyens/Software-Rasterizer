@@ -39,6 +39,13 @@ namespace dae
 			};
 		}
 
+		// Remap the input float to output range
+		inline float Remap(float value, float inMin, float inMax, float outMin, float outMax)
+		{
+			return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
+		}
+
+
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT

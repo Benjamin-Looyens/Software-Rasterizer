@@ -179,6 +179,12 @@ void Renderer::Render()
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
 
+							ColorRGB finalColor{ Utils::Remap(zDepth, 0.9f, 1.0f, 0.0f, 1.0f) };
+							if (m_DoDepthRender) {
+								UpdateColor(pixelIndex, finalColor);
+								continue;
+							}
+
 							const float wDepth = 1 / (
 								w0 * (1 / v0Pos.w) +
 								w1 * (1 / v1Pos.w) +
@@ -229,7 +235,6 @@ void Renderer::Render()
 							constexpr float LIGHT_VALUE = 0.577f;
 							const Vector3 lightDir{ LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE };
 							
-							ColorRGB finalColor;
 							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, -lightDir.Normalized(), m_UseNormalMap, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
