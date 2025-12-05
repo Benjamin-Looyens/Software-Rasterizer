@@ -192,7 +192,7 @@ void Renderer::Render()
 
 							const InterpolationData data{ v0Pos, v1Pos, v2Pos, w0, w1, w2, zDepth, wDepth };
 
-							const Vertex_Out interpolated{
+							Vertex_Out interpolated{
 								// Position
 								{
 									1 / (
@@ -222,9 +222,10 @@ void Renderer::Render()
 								continue;
 							}
 
-							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, -lightDir.Normalized(), m_UseNormalMap, finalColor)) {
+							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, mesh.vertMode, -lightDir.Normalized(), m_UseNormalMap, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
+							
 						}
 					}
 				}

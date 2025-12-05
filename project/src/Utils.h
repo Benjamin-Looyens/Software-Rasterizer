@@ -58,7 +58,7 @@ namespace dae
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT
-		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, Renderer::LightingMode mode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
+		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, const Renderer::LightingMode& lightMode, const VertexRenderMode& vertMode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
 		{
 			constexpr float AMBIENT_VALUE = 0.03f;
 			constexpr float LIGHT_INTENSITY = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
@@ -78,7 +78,7 @@ namespace dae
 			const float observedArea = std::max(0.0f, Vector3::Dot(normal, lightDir));
 
 			// Lambert calc
-			const ColorRGB diffuse = meshTexture.pDiffuse->Sample(vert.uv);
+			const ColorRGB diffuse = vertMode == VertexRenderMode::COLORS ? vert.color : meshTexture.pDiffuse->Sample(vert.uv);
 			const ColorRGB lambert = ((LIGHT_INTENSITY / PI) * diffuse);
 
 			// Specular (Phong) Calc
@@ -90,7 +90,7 @@ namespace dae
 			const float specular = ks * std::powf(cosAngle, exp * SHININESS);
 
 			// HACK : Ideally, only compute what is necessary instead of calculating it all before switch statement
-			switch (mode)
+			switch (lightMode)
 			{
 				case Renderer::LightingMode::ObservedArea:
 					color_OUT = { observedArea };

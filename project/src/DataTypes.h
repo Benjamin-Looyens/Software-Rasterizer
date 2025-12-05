@@ -112,12 +112,19 @@ namespace dae
 		bool m_FullDirty{};
 	};
 
+	enum class VertexRenderMode
+	{
+		COLORS,
+		TEXTURES
+	};
+
 	struct Mesh
 	{
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
 		TextureData textureData;
+		VertexRenderMode vertMode{ VertexRenderMode::TEXTURES };
 
 		std::vector<Vertex_Out> vertices_out{};
 		Transform worldTransform{};
