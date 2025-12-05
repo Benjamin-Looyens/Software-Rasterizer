@@ -21,6 +21,22 @@ void ShutDown(SDL_Window* pWindow)
 	SDL_Quit();
 }
 
+void PrintInputs()
+{
+	std::cout <<
+		"************** INPUTS **************\n" <<
+		"H  - Print Input Mappings\n" <<
+		"R  - Reset Camera Position\n" <<
+		"X  - Take Screenshot\n" <<
+		"B  - Toggle Bounding Box Rendering\n" <<
+		"F4 - Toggle Depth Buffer Rendering\n" <<
+		"F5 - Toggle Mesh Rotation\n" <<
+		"F6 - Toggle Sampling Normal Map\n" <<
+		"F7 - Cycle Through Lighting Modes\n" <<
+		"F8 - Start Performance Benchmark\n"
+		"************************************\n";
+}
+
 int main(int argc, char* args[])
 {
 	//Unreferenced parameters
@@ -54,6 +70,9 @@ int main(int argc, char* args[])
 	//Start loop
 	pTimer->Start();
 
+	// Print Starter Inputs
+	PrintInputs();
+
 	float printTimer = 0.f;
 	bool isLooping = true;
 	bool takeScreenshot = false;
@@ -69,6 +88,8 @@ int main(int argc, char* args[])
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
+				if (e.key.keysym.scancode == SDL_SCANCODE_H)
+					PrintInputs();
 				if (e.key.keysym.scancode == SDL_SCANCODE_R)
 					pRenderer->ResetCamera();
 				if (e.key.keysym.scancode == SDL_SCANCODE_X)
