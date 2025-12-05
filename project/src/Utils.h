@@ -45,7 +45,16 @@ namespace dae
 			return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
 		}
 
-
+		// Template Interpolation
+		template<typename T>
+		T VertexInterpolate(const T& val0, const T& val1, const T& val2, const Vector4& pos0, const Vector4& pos1, const Vector4& pos2, const float w0, const float w1, const float w2, const float wDepth)
+		{
+			return
+			(((val0 / pos0.w) * w0) +
+			 ((val1 / pos1.w) * w1) +
+			 ((val2 / pos2.w) * w2)) * wDepth;
+		}
+		
 		// Function for Shading a Pixel
 		// Will return false if "wrong" data was inputted or if out of bounds
 		// Stores RGB data for pixel within color_OUT

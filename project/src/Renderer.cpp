@@ -190,9 +190,9 @@ void Renderer::Render()
 								w1 * (1 / v1Pos.w) +
 								w2 * (1 / v2Pos.w));
 
-							Vertex_Out interpolated{
+							const Vertex_Out interpolated{
 								// Position
-								{ 	
+								{
 									1 / (
 										w0 * (1 / v0Pos.x) +
 										w1 * (1 / v1Pos.x) +
@@ -201,40 +201,27 @@ void Renderer::Render()
 										w0 * (1 / v0Pos.y) +
 										w1 * (1 / v1Pos.y) +
 										w2 * (1 / v2Pos.y)),
-									zDepth, wDepth 
+									zDepth, wDepth
 								},
 
 								// Color
-								(((v0.color / v0Pos.w) * w0) +
-								((v1.color / v1Pos.w)  * w1) +
-								((v2.color / v2Pos.w)  * w2))
-								* wDepth,
+								Utils::VertexInterpolate<ColorRGB>(v0.color, v1.color, v2.color, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
 
 								// UV
-								(((v0.uv / v0Pos.w) * w0) +
-								((v1.uv / v1Pos.w)  * w1) +
-								((v2.uv / v2Pos.w)  * w2))
-								* wDepth,
+								Utils::VertexInterpolate<Vector2>(v0.uv, v1.uv, v2.uv, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
 
 								// Normal
-								((v0.normal * w0) +
-								(v1.normal  * w1) +
-								(v2.normal  * w2)).Normalized(),
+								Utils::VertexInterpolate<Vector3>(v0.normal, v1.normal, v2.normal, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
 
 								// Tangent
-								((v0.tangent * w0) +
-								(v1.tangent  * w1) +
-								(v2.tangent  * w2)).Normalized(),
+								Utils::VertexInterpolate<Vector3>(v0.tangent, v1.tangent, v2.tangent, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
 
 								// ViewDirection
-								((((v0.viewDirection / v0Pos.w) * w0) +
-								((v1.viewDirection / v1Pos.w)  * w1) +
-								((v2.viewDirection / v2Pos.w)  * w2)) * wDepth).Normalized()
+								Utils::VertexInterpolate<Vector3>(v0.viewDirection, v1.viewDirection, v2.viewDirection, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
 							};
 							
 							constexpr float LIGHT_VALUE = 0.577f;
 							const Vector3 lightDir{ LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE };
-							
 
 							if (m_DoWireFrameRender && (w0 < 0.025f || w1 < 0.025f || w2 < 0.025f)) {
 								finalColor = colors::Gray;
