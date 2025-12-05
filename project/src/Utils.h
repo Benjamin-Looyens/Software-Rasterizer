@@ -80,7 +80,7 @@ namespace dae
 			const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
 			const float specular = ks * std::powf(cosAngle, exp * SHININESS);
 
-			// TODO : Ideally, only compute what is necessary instead of calculating it all before switch statement
+			// HACK : Ideally, only compute what is necessary instead of calculating it all before switch statement
 			switch (mode)
 			{
 				case Renderer::LightingMode::ObservedArea:

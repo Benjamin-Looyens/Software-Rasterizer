@@ -280,26 +280,90 @@ void Renderer::VertexTransformationFunction(const Matrix& worldMat, const std::v
 	);
 }
 
+void dae::Renderer::ToggleBoundsRender()
+{
+	m_DoBoundsRender = !m_DoBoundsRender;
+
+	std::cout << "BoundingBox Rendering = ";
+	switch (m_DoBoundsRender)
+	{
+	case true:
+		std::cout << "ON\n";
+		break;
+	case false:
+		std::cout << "OFF\n";
+		break;
+	}
+}
+
+void dae::Renderer::ToggleDepthRender()
+{
+	m_DoDepthRender = !m_DoDepthRender;
+
+	std::cout << "Depth Buffer Rendering = ";
+	switch (m_DoDepthRender)
+	{
+	case true:
+		std::cout << "ON\n";
+		break;
+	case false:
+		std::cout << "OFF\n";
+		break;
+	}
+}
+
+void dae::Renderer::ToggleRotation()
+{
+	m_DoRotation = !m_DoRotation;
+
+	std::cout << "Mesh Rotation = ";
+	switch (m_DoRotation)
+	{
+	case true:
+		std::cout << "ON\n";
+		break;
+	case false:
+		std::cout << "OFF\n";
+		break;
+	}
+}
+
+void dae::Renderer::ToggleNormalMap()
+{
+	m_UseNormalMap = !m_UseNormalMap;
+
+	std::cout << "Normal Map Sampling = ";
+	switch (m_UseNormalMap)
+	{
+	case true:
+		std::cout << "ON\n";
+		break;
+	case false:
+		std::cout << "OFF\n";
+		break;
+	}
+}
+
 void dae::Renderer::CycleLightingMode()
 {
 	// Yuck
 	m_CurMode = static_cast<LightingMode>((static_cast<uint8_t>(m_CurMode) + 1) % static_cast<uint8_t>(LightingMode::ModeAmount)); 
 
 	// Yuck part 2
-	std::cout << "Switched rendering mode to: ";
+	std::cout << "Rendering Mode = ";
 	switch (m_CurMode)
 	{
 	case Renderer::LightingMode::ObservedArea:
-		std::cout << "ObservedArea\n";
+		std::cout << "OBSERVED AREA\n";
 		break;
 	case Renderer::LightingMode::Diffuse:
-		std::cout << "Diffuse\n";
+		std::cout << "LAMBERT DIFFUSE\n";
 		break;
 	case Renderer::LightingMode::Specular:
-		std::cout << "Specular\n";
+		std::cout << "PHONG SPECULAR\n";
 		break;
 	case Renderer::LightingMode::Combined:
-		std::cout << "Combined\n";
+		std::cout << "COMBINED\n";
 		break;
 	}
 }

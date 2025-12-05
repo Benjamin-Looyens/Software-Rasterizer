@@ -33,10 +33,10 @@ namespace dae
 
 		void VertexTransformationFunction(const Matrix& worldMat, const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
 
-		void ToggleBoundsRender() { m_DoBoundsRender = !m_DoBoundsRender; }
-		void ToggleDepthRender() { m_DoDepthRender = !m_DoDepthRender; }
-		void ToggleRotation() { m_DoRotation = !m_DoRotation; }
-		void ToggleNormalMap() { m_UseNormalMap = !m_UseNormalMap; }
+		void ToggleBoundsRender();
+		void ToggleDepthRender();
+		void ToggleRotation();
+		void ToggleNormalMap(); 
 
 		void CycleLightingMode();
 
