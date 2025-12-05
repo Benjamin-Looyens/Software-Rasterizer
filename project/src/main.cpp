@@ -54,9 +54,6 @@ int main(int argc, char* args[])
 	//Start loop
 	pTimer->Start();
 
-	// Start Benchmark
-	// TODO pTimer->StartBenchmark();
-
 	float printTimer = 0.f;
 	bool isLooping = true;
 	bool takeScreenshot = false;
@@ -86,6 +83,8 @@ int main(int argc, char* args[])
 					pRenderer->ToggleNormalMap();
 				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
 					pRenderer->CycleLightingMode();
+				if (e.key.keysym.scancode == SDL_SCANCODE_F8)
+					pTimer->StartBenchmark();
 				break;
 			}
 		}
@@ -102,7 +101,7 @@ int main(int argc, char* args[])
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			if (!pTimer->IsDoingBenchmark()) std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
 		}
 
 		//Save screenshot after full render

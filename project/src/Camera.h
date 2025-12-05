@@ -104,8 +104,6 @@ namespace dae
 
 		Matrix CalculateCameraToWorld()
 		{
-			// Leftover from Raytracer
-			// If I genuinely need to use this, apply the dirty pattern again
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right).Normalized();
 

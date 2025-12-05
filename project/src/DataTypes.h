@@ -51,8 +51,7 @@ namespace dae
 		Transform() = default;
 		Transform(const Vector3& _translation, const Vector3& _rotation, const Vector3& _scale)
 			: m_Translation{ Matrix::CreateTranslation(_translation) }, m_Rotation{ Matrix::CreateRotation(_rotation) }, m_Scale{ Matrix::CreateScale(_scale) }
-		{
-		}
+		{}
 
 		void SetTranslation(const Vector3& _translation)
 		{

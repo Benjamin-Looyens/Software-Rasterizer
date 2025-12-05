@@ -376,7 +376,6 @@ void dae::Renderer::ResetCamera()
 
 void dae::Renderer::UpdateColor(const uint32_t& index, ColorRGB& col)
 {
-	//Update Color in Buffer
 	col.MaxToOne();
 
 	m_pBackBufferPixels[index] = SDL_MapRGB(m_pBackBuffer->format,

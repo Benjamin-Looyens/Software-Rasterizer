@@ -27,6 +27,7 @@ namespace dae
 		float GetElapsed() const { return m_ElapsedTime; };
 		float GetTotal() const { return m_TotalTime; };
 		bool IsRunning() const { return !m_IsStopped; };
+		bool IsDoingBenchmark() const { return m_BenchmarkActive; };
 
 	private:
 		uint64_t m_BaseTime = 0;

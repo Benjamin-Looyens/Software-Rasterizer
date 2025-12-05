@@ -31,8 +31,6 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
-		void VertexTransformationFunction(const Matrix& worldMat, const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
-
 		void ToggleBoundsRender();
 		void ToggleDepthRender();
 		void ToggleRotation();
@@ -50,10 +48,10 @@ namespace dae
 			Combined,
 
 			ModeAmount
-		}; 
-		// Does it need a depth render mode?
+		};
 
 	private:
+		void VertexTransformationFunction(const Matrix& worldMat, const std::vector<Vertex>& vertices_in, std::vector<Vertex_Out>& vertices_out) const;
 		void UpdateColor(const uint32_t& index, ColorRGB& col); // HACK : Not referenced as const, is kinda bad practice
 
 		LightingMode m_CurMode{ LightingMode::Combined };
