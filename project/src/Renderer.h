@@ -32,9 +32,10 @@ namespace dae
 		bool SaveBufferToImage() const;
 
 		void ToggleBoundsRender();
+		void ToggleWireFrameRender();
 		void ToggleDepthRender();
 		void ToggleRotation();
-		void ToggleNormalMap(); 
+		void ToggleNormalMap();
 
 		void CycleLightingMode();
 
@@ -74,6 +75,7 @@ namespace dae
 		int m_Width{};
 		int m_Height{};
 
+		bool m_DoWireFrameRender{ false };
 		bool m_DoBoundsRender{ false };
 		bool m_DoDepthRender{ false };
 		bool m_DoRotation{ false };

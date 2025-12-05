@@ -29,6 +29,7 @@ void PrintInputs()
 		"R  - Reset Camera Position\n" <<
 		"X  - Take Screenshot\n" <<
 		"B  - Toggle Bounding Box Rendering\n" <<
+		"F  - Toggle Wireframe Rendering\n" <<
 		"F4 - Toggle Depth Buffer Rendering\n" <<
 		"F5 - Toggle Mesh Rotation\n" <<
 		"F6 - Toggle Sampling Normal Map\n" <<
@@ -96,6 +97,8 @@ int main(int argc, char* args[])
 					takeScreenshot = true;
 				if (e.key.keysym.scancode == SDL_SCANCODE_B)
 					pRenderer->ToggleBoundsRender();
+				if (e.key.keysym.scancode == SDL_SCANCODE_F)
+					pRenderer->ToggleWireFrameRender();
 				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
 					pRenderer->ToggleDepthRender();
 				if (e.key.keysym.scancode == SDL_SCANCODE_F5)

@@ -235,6 +235,13 @@ void Renderer::Render()
 							constexpr float LIGHT_VALUE = 0.577f;
 							const Vector3 lightDir{ LIGHT_VALUE, -LIGHT_VALUE, LIGHT_VALUE };
 							
+
+							if (m_DoWireFrameRender && (w0 < 0.025f || w1 < 0.025f || w2 < 0.025f)) {
+								finalColor = colors::Gray;
+								UpdateColor(pixelIndex, finalColor);
+								continue;
+							}
+
 							if (Utils::PixelShade(interpolated, mesh.textureData, m_CurMode, -lightDir.Normalized(), m_UseNormalMap, finalColor)) {
 								UpdateColor(pixelIndex, finalColor);
 							}
@@ -286,6 +293,22 @@ void dae::Renderer::ToggleBoundsRender()
 
 	std::cout << "BoundingBox Rendering = ";
 	switch (m_DoBoundsRender)
+	{
+	case true:
+		std::cout << "ON\n";
+		break;
+	case false:
+		std::cout << "OFF\n";
+		break;
+	}
+}
+
+void dae::Renderer::ToggleWireFrameRender()
+{
+	m_DoWireFrameRender = !m_DoWireFrameRender;
+
+	std::cout << "Wire Frame Rendering = ";
+	switch (m_DoWireFrameRender)
 	{
 	case true:
 		std::cout << "ON\n";
