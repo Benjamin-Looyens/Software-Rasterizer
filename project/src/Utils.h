@@ -86,7 +86,7 @@ namespace dae
 			const float exp = meshTexture.pGloss->Sample(vert.uv).r;
 
 			const Vector3 reflect = lightDir - (2.0f * (Vector3::Dot(lightDir, normal) * normal));
-			const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDirection), 0.0f);
+			const float cosAngle = std::max(Vector3::Dot(reflect.Normalized(), vert.viewDir), 0.0f);
 			const float specular = ks * std::powf(cosAngle, exp * SHININESS);
 
 			// HACK : Ideally, only compute what is necessary instead of calculating it all before switch statement
@@ -178,7 +178,7 @@ namespace dae
 					{
 						// OBJ format uses 1-based arrays
 						file >> iPosition;
-						vertex.position = positions[iPosition - 1];
+						vertex.pos = positions[iPosition - 1];
 
 						if ('/' == file.peek())//is next in buffer ==  '/' ?
 						{
@@ -229,9 +229,9 @@ namespace dae
 				uint32_t index1 = indices[size_t(i) + 1];
 				uint32_t index2 = indices[size_t(i) + 2];
 
-				const Vector3& p0 = vertices[index0].position;
-				const Vector3& p1 = vertices[index1].position;
-				const Vector3& p2 = vertices[index2].position;
+				const Vector3& p0 = vertices[index0].pos;
+				const Vector3& p1 = vertices[index1].pos;
+				const Vector3& p2 = vertices[index2].pos;
 				const Vector2& uv0 = vertices[index0].uv;
 				const Vector2& uv1 = vertices[index1].uv;
 				const Vector2& uv2 = vertices[index2].uv;
@@ -255,7 +255,7 @@ namespace dae
 
 				if(flipAxisAndWinding)
 				{
-					v.position.z *= -1.f;
+					v.pos.z *= -1.f;
 					v.normal.z *= -1.f;
 					v.tangent.z *= -1.f;
 				}

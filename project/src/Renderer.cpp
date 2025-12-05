@@ -37,7 +37,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 								Texture::LoadFromFile("resources/vehicle_normal.png"), 
 								Texture::LoadFromFile("resources/vehicle_specular.png"),
 								Texture::LoadFromFile("resources/vehicle_gloss.png") };
-	m_Meshes[0].worldMatrixTransform.SetTranslation(m_MeshPos);
+	m_Meshes[0].worldTransform.SetTranslation(m_MeshPos);
 
 	//Initialize Camera
 	m_Camera.Initialize(m_Width, m_Height, 45.0f, m_CameraStartPos);
@@ -64,7 +64,7 @@ void Renderer::Update(Timer* pTimer)
 		m_RotCounter += std::fmod(pTimer->GetElapsed(), PI_2);
 
 		for (Mesh& mesh : m_Meshes) {
-			mesh.worldMatrixTransform.SetRotationY(m_RotCounter);
+			mesh.worldTransform.SetRotationY(m_RotCounter);
 		}
 		m_VerticesDirty = true;
 	}
@@ -85,7 +85,7 @@ void Renderer::Render()
 	// Convert to NDC
 	if (m_VerticesDirty) {
 		for (Mesh& mesh : m_Meshes) {
-			VertexTransformationFunction(mesh.worldMatrixTransform.GetFull(), mesh.vertices, mesh.vertices_out);
+			VertexTransformationFunction(mesh.worldTransform.GetFull(), mesh.vertices, mesh.vertices_out);
 		}
 		m_VerticesDirty = false;
 	}
@@ -122,11 +122,11 @@ void Renderer::Render()
 			
 			// TODO : Collapse a lot of checks to functions
 
-			if (!Utils::FrustumCheck(v0.position, v1.position, v2.position)) continue;
+			if (!Utils::FrustumCheck(v0.pos, v1.pos, v2.pos)) continue;
 
-			const Vector4 v0Pos = Utils::ApplyResolution(v0.position, m_Width, m_Height);
-			const Vector4 v1Pos = Utils::ApplyResolution(v1.position, m_Width, m_Height);
-			const Vector4 v2Pos = Utils::ApplyResolution(v2.position, m_Width, m_Height);
+			const Vector4 v0Pos = Utils::ApplyResolution(v0.pos, m_Width, m_Height);
+			const Vector4 v1Pos = Utils::ApplyResolution(v1.pos, m_Width, m_Height);
+			const Vector4 v2Pos = Utils::ApplyResolution(v2.pos, m_Width, m_Height);
 
 			const Vector3 eV0 = v1Pos - v0Pos;
 			const Vector3 eV1 = v2Pos - v1Pos;
@@ -206,11 +206,11 @@ void Renderer::Render()
 									zDepth, wDepth
 								},
 
-								Utils::VertexInterpolate<ColorRGB>(v0.color, v1.color, v2.color, data),							// Color
-								Utils::VertexInterpolate<Vector2>(v0.uv, v1.uv, v2.uv, data),									// UV
-								Utils::VertexInterpolate<Vector3>(v0.normal, v1.normal, v2.normal, data),						// Normal
-								Utils::VertexInterpolate<Vector3>(v0.tangent, v1.tangent, v2.tangent, data),					// Tangent
-								Utils::VertexInterpolate<Vector3>(v0.viewDirection, v1.viewDirection, v2.viewDirection, data),	// ViewDirection
+								Utils::VertexInterpolate<ColorRGB>(v0.color, v1.color, v2.color, data),		 // Color
+								Utils::VertexInterpolate<Vector2>(v0.uv, v1.uv, v2.uv, data),				 // UV
+								Utils::VertexInterpolate<Vector3>(v0.normal, v1.normal, v2.normal, data),	 // Normal
+								Utils::VertexInterpolate<Vector3>(v0.tangent, v1.tangent, v2.tangent, data), // Tangent
+								Utils::VertexInterpolate<Vector3>(v0.viewDir, v1.viewDir, v2.viewDir, data), // ViewDirection
 							};
 							
 							constexpr float LIGHT_VALUE = 0.577f;
@@ -248,8 +248,8 @@ void Renderer::VertexTransformationFunction(const Matrix& worldMat, const std::v
 
 	std::transform(std::execution::par, begin(vertices_in), end(vertices_in), begin(vertices_OUT),
 		[&](const Vertex& vert) {
-			const Vector3 worldPos = worldMat.TransformPoint(vert.position);
-			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.position, 1.0f });
+			const Vector3 worldPos = worldMat.TransformPoint(vert.pos);
+			const Vector4 view = worldViewProjectionMatrix.TransformPoint({ vert.pos, 1.0f });
 			
 			const Vector4 clip = {	view.x / view.w,
 									view.y / view.w,
