@@ -47,12 +47,12 @@ namespace dae
 
 		// Template Interpolation
 		template<typename T>
-		T VertexInterpolate(const T& val0, const T& val1, const T& val2, const Vector4& pos0, const Vector4& pos1, const Vector4& pos2, const float w0, const float w1, const float w2, const float wDepth)
+		T VertexInterpolate(const T& val0, const T& val1, const T& val2, const InterpolationData& data)
 		{
 			return
-			(((val0 / pos0.w) * w0) +
-			 ((val1 / pos1.w) * w1) +
-			 ((val2 / pos2.w) * w2)) * wDepth;
+			(((val0 / data.pos0.w) * data.w0) +
+			 ((val1 / data.pos1.w) * data.w1) +
+			 ((val2 / data.pos2.w) * data.w2)) * data.wDepth;
 		}
 		
 		// Function for Shading a Pixel

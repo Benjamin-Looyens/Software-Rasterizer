@@ -190,6 +190,8 @@ void Renderer::Render()
 								w1 * (1 / v1Pos.w) +
 								w2 * (1 / v2Pos.w));
 
+							const InterpolationData data{ v0Pos, v1Pos, v2Pos, w0, w1, w2, zDepth, wDepth };
+
 							const Vertex_Out interpolated{
 								// Position
 								{
@@ -204,20 +206,11 @@ void Renderer::Render()
 									zDepth, wDepth
 								},
 
-								// Color
-								Utils::VertexInterpolate<ColorRGB>(v0.color, v1.color, v2.color, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
-
-								// UV
-								Utils::VertexInterpolate<Vector2>(v0.uv, v1.uv, v2.uv, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
-
-								// Normal
-								Utils::VertexInterpolate<Vector3>(v0.normal, v1.normal, v2.normal, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
-
-								// Tangent
-								Utils::VertexInterpolate<Vector3>(v0.tangent, v1.tangent, v2.tangent, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
-
-								// ViewDirection
-								Utils::VertexInterpolate<Vector3>(v0.viewDirection, v1.viewDirection, v2.viewDirection, v0Pos, v1Pos, v2Pos, w0, w1, w2, wDepth),
+								Utils::VertexInterpolate<ColorRGB>(v0.color, v1.color, v2.color, data),							// Color
+								Utils::VertexInterpolate<Vector2>(v0.uv, v1.uv, v2.uv, data),									// UV
+								Utils::VertexInterpolate<Vector3>(v0.normal, v1.normal, v2.normal, data),						// Normal
+								Utils::VertexInterpolate<Vector3>(v0.tangent, v1.tangent, v2.tangent, data),					// Tangent
+								Utils::VertexInterpolate<Vector3>(v0.viewDirection, v1.viewDirection, v2.viewDirection, data),	// ViewDirection
 							};
 							
 							constexpr float LIGHT_VALUE = 0.577f;

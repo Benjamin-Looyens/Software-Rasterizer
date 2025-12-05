@@ -122,4 +122,22 @@ namespace dae
 		std::vector<Vertex_Out> vertices_out{};
 		Transform worldMatrixTransform{};
 	};
+
+	struct InterpolationData
+	{
+		InterpolationData(const Vector4& _pos0, const Vector4& _pos1, const Vector4& _pos2, const float& _w0, const float& _w1, const float& _w2, const float& _zDepth, const float& _wDepth)
+			: pos0{ _pos0 }, pos1{ _pos1 }, pos2{ _pos2 }, w0{ _w0 }, w1{ _w1 }, w2{ _w2 }, zDepth{ _zDepth }, wDepth{ _wDepth }
+		{};
+
+		const Vector4& pos0;
+		const Vector4& pos1;
+		const Vector4& pos2;
+
+		const float& w0;
+		const float& w1;
+		const float& w2;
+
+		const float& zDepth;
+		const float& wDepth;
+	};
 }
