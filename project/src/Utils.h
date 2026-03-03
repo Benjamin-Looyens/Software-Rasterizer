@@ -61,13 +61,13 @@ namespace dae
 		bool PixelShade(const Vertex_Out& vert, const TextureData& meshTexture, const Renderer::LightingMode& lightMode, const VertexRenderMode& vertMode, const Vector3& lightDir, bool useNormalMap, ColorRGB& color_OUT)
 		{
 			constexpr float AMBIENT_VALUE = 0.03f;
-			constexpr float LIGHT_INTENSITY = 7.0f; // TODO : Prob implement a Light Type that stores all the info for lights (direction, intensity, ambient)
+			constexpr float LIGHT_INTENSITY = 7.0f; // NOTE : Could implement a Light Type that stores all the info for lights (direction, intensity, ambient)
 			constexpr float SHININESS = 25.0f;
 
+			// Normal Calc
 			const Vector3 binormal = Vector3::Cross(vert.normal, vert.tangent);
 			const Matrix tangentSpace = { vert.tangent, binormal, vert.normal, Vector3::Zero };
 
-			// TODO : Collapse normalMapSample into a singular line (so it can be const)
 			Vector3 normalMapSample = { meshTexture.pNormal->Sample(vert.uv) };
 			normalMapSample = 2.0f * normalMapSample - Vector3{ 1.0f, 1.0f, 1.0f };
 			normalMapSample = tangentSpace.TransformVector(normalMapSample).Normalized();

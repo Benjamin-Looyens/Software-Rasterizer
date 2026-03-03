@@ -4,6 +4,8 @@
 
 namespace dae
 {
+	class Texture;
+
 	struct Vertex
 	{
 		Vector3 pos{};

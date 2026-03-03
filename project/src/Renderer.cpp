@@ -49,7 +49,7 @@ Renderer::~Renderer()
 {
 	delete[] m_pDepthBuffer;
 
-	// HACK : Feels really stupid but it was somehow freeing memory when just attaching these deletes to the destructor
+	// HACK : Pretty silly way to go about it
 	for (Mesh& mesh : m_Meshes) {
 		mesh.textureData.FreeMemory();
 	}
@@ -72,7 +72,6 @@ void Renderer::Update(Timer* pTimer)
 
 void Renderer::Render()
 {
-	//@START
 	// Clear BackBuffer
 	SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format, 75, 75, 75));
 
@@ -82,7 +81,7 @@ void Renderer::Render()
 	// Reset Depth buffer
 	std::fill_n(m_pDepthBuffer, m_Width * m_Height, std::numeric_limits<float>::max());
 
-	// Convert to NDC
+	// Enter [Projection Stage]
 	if (m_VerticesDirty) {
 		for (Mesh& mesh : m_Meshes) {
 			VertexTransformationFunction(mesh.worldTransform.GetFull(), mesh.vertices, mesh.vertices_out);
@@ -90,7 +89,7 @@ void Renderer::Render()
 		m_VerticesDirty = false;
 	}
 
-	//RENDER LOGIC
+	// Enter [Rasterization Stage]
 	for (const Mesh& mesh : m_Meshes) {
 		const auto& indices = mesh.indices;
 		const auto& vertices = mesh.vertices_out;
@@ -112,15 +111,13 @@ void Renderer::Render()
 			const int i0 = indices[index];
 			int i1 = indices[index + 1];
 			int i2 = indices[index + 2];
-		
+
 			if (i0 == i1 || i1 == i2) continue; // Degenerate triangle
 			if (index & 1 && sizeCheck) std::swap(i1, i2); // HACK : The && sizeCheck isnt ideal but works
-		
+
 			const Vertex_Out& v0 = vertices[i0];
 			const Vertex_Out& v1 = vertices[i1];
 			const Vertex_Out& v2 = vertices[i2];
-			
-			// TODO : Collapse a lot of checks to functions
 
 			if (!Utils::FrustumCheck(v0.pos, v1.pos, v2.pos)) continue;
 
@@ -144,7 +141,7 @@ void Renderer::Render()
 					const int pixelIndex = px + (py * m_Width);
 
 					if (m_DoBoundsRender) {
-						if ((px == minX || py == minY) || 
+						if ((px == minX || py == minY) ||
 							(px == maxX - 1 || py == maxY - 1)) {
 							ColorRGB finalColor = (v0.color + v1.color + v2.color) / 3; // Average
 							UpdateColor(pixelIndex, finalColor);
@@ -167,15 +164,15 @@ void Renderer::Render()
 						const float magnitude = in0 + in1 + in2;
 
 						const float w0 = in1 / magnitude;
-						const float w1 = in2 / magnitude; 
-						const float w2 = in0 / magnitude; 
+						const float w1 = in2 / magnitude;
+						const float w2 = in0 / magnitude;
 
 						const float zDepth = 1.0f / (
 							w0 * (1 / v0Pos.z) +
 							w1 * (1 / v1Pos.z) +
 							w2 * (1 / v2Pos.z));
 
-						// TODO : Potentially collapse the following "Stage" to a different function (Pixel sampling stage)
+						// Enter [Pixel Shading Stage]
 						if (zDepth < m_pDepthBuffer[pixelIndex]) {
 							m_pDepthBuffer[pixelIndex] = zDepth;
 

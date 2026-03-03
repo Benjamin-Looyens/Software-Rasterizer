@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <vector>
+
 #include "Camera.h"
 
 struct SDL_Window;
@@ -9,6 +10,7 @@ struct SDL_Surface;
 namespace dae
 {
 	class Texture;
+	
 	struct Mesh;
 	struct Vertex;
 	struct Vertex_Out;
